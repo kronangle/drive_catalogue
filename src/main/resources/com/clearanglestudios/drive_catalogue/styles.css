@@ -1,0 +1,40 @@
+.custom-button {
+    -fx-background-color: #3498db; /* Light blue */
+    -fx-text-fill: white;         /* White text */
+    -fx-background-radius: 10;   /* Rounded corners */
+}
+
+.custom-button:hover {
+    -fx-background-color: #2980b9; /* Darker blue on hover */
+}
+
+.custom-button:pressed {
+    -fx-background-color: #1abc9c; /* Green on press */
+    -fx-text-fill: #ffffff;         /* Optional: Ensure text remains visible */
+}
+
+.custom-label {
+    -fx-background-color: #3444DB; 
+    -fx-text-fill: white;         /* White text */
+    -fx-background-radius: 15;   /* Rounded corners */
+}
+
+.custom-pane {
+	-fx-background-color: #202020; 
+	-fx-radius: 10;
+	-fx-border-color: teal;           /* Border color */
+	-fx-border-width: 2px;          /* Border width */
+	-fx-border-style: solid;
+	-fx-border-radius: 10;
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+
+<Pane fx:id="paneLoginPage" maxHeight="400.0" maxWidth="600.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" style="-fx-background-image: url(com/clearanglestudios/Images/background03.png); -fx-background-size: cover; -fx-background-repeat: no-repeat; -fx-background-position: center;" styleClass="custom-pane" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.clearanglestudios.drive_catalogue.LoginPageController">
+   <children>
+      <Button fx:id="loginButton_LoginPage" alignment="CENTER" layoutX="275.0" layoutY="286.0" mnemonicParsing="false" onAction="#loginButtonClicked" styleClass="custom-button" text="START" textFill="#f8f8f8" />
+      <Label focusTraversable="false" layoutX="181.0" layoutY="311.0" prefHeight="37.0" prefWidth="243.0" text="Please login with your CAS Google Account. " textAlignment="CENTER" textFill="WHITE" wrapText="true" />
+      <Label focusTraversable="false" layoutX="124.0" layoutY="353.0" prefHeight="37.0" prefWidth="358.0" text="You must ALLOW the CAS Drive Catalogue access in order for the App to work correctly." textAlignment="CENTER" textFill="WHITE" wrapText="true" />
+      <ImageView fitHeight="85.0" fitWidth="200.0" layoutX="211.0" layoutY="4.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../Images/DRIVE-CATALOGUE-08-01-2025.gif" />
+         </image>
+      </ImageView>
+   </children>
+</Pane>

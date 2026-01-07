@@ -106,7 +106,7 @@ public class DriveAssignController {
 	public void initialize() {
 //		-------------------------------------------------
 		logger.info("Initialising DriveIngestController");
-		App.hideNotification();
+//		App.hideNotification();
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveAssign.setText(loggedInLabelSpacing + loggedInLabelText
@@ -381,7 +381,7 @@ public class DriveAssignController {
 						GoogleTools.pushChangesToSheet(info);
 						logger.info("COMPLETED PROCESSING INFO");
 						resetForm();
-						JavaFXTools.switchToHome();
+						JavaFXTools.loadScene(FxmlView.HOME);
 					} else {
 //						The final error message to show
 						StringBuilder notification = new StringBuilder();
@@ -417,12 +417,12 @@ public class DriveAssignController {
 	@FXML
 	private void cancelButtonClicked() {
 		resetForm();
-
-		try {
-			JavaFXTools.switchToHome();
-		} catch (IOException e) {
-			JavaFXTools.logIOExceptionFromHomePage("cancelButtonClicked",e);
-		}
+		JavaFXTools.loadScene(FxmlView.HOME);
+//		try {
+//			JavaFXTools.switchToHome();
+//		} catch (IOException e) {
+//			JavaFXTools.logIOExceptionFromHomePage("cancelButtonClicked",e);
+//		}
 	}
 
 //	Toggles which textField is active

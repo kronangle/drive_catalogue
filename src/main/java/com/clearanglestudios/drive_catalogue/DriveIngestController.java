@@ -25,7 +25,7 @@ public class DriveIngestController {
 //										DECLARATIONS
 //	
 //	=====================================================================================
-	
+
 //	User input fields and controls
 	@FXML
 	private ChoiceBox<String> driveChoiceBox_DriveIngest;
@@ -35,20 +35,20 @@ public class DriveIngestController {
 	private ComboBox<String> driveComboBox_DriveIngest;
 	@FXML
 	private Label loggedInLabel_DriveIngest;
-	
+
 //	-------------------------------------------------------------------------------------
-	
+
 //	ComboBox filtering tools
 	private ObservableList<String> obserableDriveList = FXCollections.observableArrayList();
 	private String oldDriveFilter = "";
 
 //	-------------------------------------------------------------------------------------
-	
+
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(DriveIngestController.class);
 
 //	-------------------------------------------------------------------------------------
-	
+
 //	Map Keys
 	private static final String DRIVE_NAME_KEY = "DriveName";
 	private static final String PC_NAME_KEY = "PcName";
@@ -56,7 +56,7 @@ public class DriveIngestController {
 //	Statuses
 	private static final String STATUS_TO_FIND = "out";
 	private static final String STATUS_TO_APPLY = "ingesting";
-	
+
 //	-------------------------------------------------------------------------------------
 
 //	Logged in user label
@@ -72,7 +72,7 @@ public class DriveIngestController {
 //	Runs before displaying the pane
 	@FXML
 	public void initialize() {
-		App.hideNotification();
+//		App.hideNotification();
 		logger.info("Initialising DriveIngestController");
 //		-----------------------------------------------------
 //		Try get the drive data from the spreadsheet
@@ -186,7 +186,7 @@ public class DriveIngestController {
 						GoogleTools.pushChangesToSheet(info);
 						logger.info("COMPLETED PROCESSING INFO");
 						resetForm();
-						JavaFXTools.switchToHome();
+						JavaFXTools.loadScene(FxmlView.HOME);
 					} else {
 //						The final error message to show
 						StringBuilder notification = new StringBuilder();
@@ -222,12 +222,7 @@ public class DriveIngestController {
 	@FXML
 	private void cancelButtonClicked() {
 		resetForm();
-
-		try {
-			JavaFXTools.switchToHome();
-		} catch (IOException e) {
-			JavaFXTools.logIOExceptionFromHomePage("cancelButtonClicked", e);
-		}
+		JavaFXTools.loadScene(FxmlView.HOME);
 	}
 
 }

@@ -6,6 +6,7 @@
 //
 //import org.junit.After;
 //import org.junit.Before;
+//import org.junit.Ignore;
 //import org.junit.Test;
 //import org.testfx.framework.junit.ApplicationTest;
 //
@@ -13,6 +14,7 @@
 //import javafx.scene.layout.VBox;
 //import javafx.stage.Stage;
 //
+//@Ignore("Skipping old tests until refactor is complete")
 //public class AppTest extends ApplicationTest {
 //
 //	@Override

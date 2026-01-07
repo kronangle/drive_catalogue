@@ -22,6 +22,13 @@
 .custom-pane {
 	-fx-background-color: #202020; 
 	-fx-radius: 10;
+	/*-fx-border-color: teal;           /* Border color 
+	-fx-border-width: 2px;          /* Border width 
+	-fx-border-style: solid;
+	-fx-border-radius: 10; */
+}
+
+.custom-stack {
 	-fx-border-color: teal;           /* Border color */
 	-fx-border-width: 2px;          /* Border width */
 	-fx-border-style: solid;

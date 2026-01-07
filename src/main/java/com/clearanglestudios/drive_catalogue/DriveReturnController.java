@@ -73,7 +73,7 @@ public class DriveReturnController {
 	@FXML
 	public void initialize() {
 		logger.info("Initialising DriveReturnController");
-		App.hideNotification();
+//		App.hideNotification();
 		try {
 			obserableDriveList.addAll(getDriveList());
 			driveComboBox_DriveReturn.getItems().addAll(obserableDriveList);
@@ -173,7 +173,7 @@ public class DriveReturnController {
 						GoogleTools.pushChangesToSheet(info);
 						logger.info("COMPLETED PROCESSING INFO");
 						resetForm();
-						JavaFXTools.switchToHome();
+						JavaFXTools.loadScene(FxmlView.HOME);
 					} else {
 //						The final error message to show
 						StringBuilder notification = new StringBuilder();
@@ -207,12 +207,7 @@ public class DriveReturnController {
 	@FXML
 	private void cancelButtonClicked() {
 		resetForm();
-
-		try {
-			JavaFXTools.switchToHome();
-		} catch (IOException e) {
-			JavaFXTools.logIOExceptionFromHomePage("cancelButtonClicked", e);
-		}
+		JavaFXTools.loadScene(FxmlView.HOME);
 	}
 
 }

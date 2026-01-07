@@ -61,7 +61,7 @@ public class PrimaryController {
 	@FXML
 	private void initialize() {
 		logger.info("Initialising PrimaryController");
-		App.hideNotification();
+//		App.hideNotification();
 //		-------------------------------------------------------------------------------------
 //		Set the label to the current user's name
 		loggedInLabel_primary.setText(loggedInLabelSpacing + loggedInLabelText
@@ -76,7 +76,7 @@ public class PrimaryController {
 //	Disable ingest button if user is not a part of the IT department
 	private void checkPermsForIngestButton() {
 		String currentUserEmail = LoginPageController.getCurrentUserEmail();
-//		Compare email address against a lookup table from the spreadsheet
+//		Compare email address against the lookup table from the spreadsheet
 		try {
 			ArrayList<String> itEmailAddresses = GoogleTools.getITEmailAddresses();
 			if (!itEmailAddresses.contains(currentUserEmail)) {
@@ -98,109 +98,34 @@ public class PrimaryController {
 //	Changes pane to assign pane
 	@FXML
 	private void switchToAssign() throws IOException {
-		App.showNotification("Loading data...");
-		logger.info("Trying to switch to DriveAssign from Primary");
-//		Add a short delay before switching the pane
-		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-		delay.setOnFinished(event -> {
-			try {
-				App.setRoot("DriveAssign");
-			} catch (IOException e) {
-				logger.warn("Failed to load DriveAssign pane.");
-				logger.error("IOException", e);
-				App.showNotification("Failed to load DriveAssign pane.");
-			}
-		});
-		delay.play();
+		JavaFXTools.loadScene(FxmlView.ASSIGN);
 	}
 
 //	Changes pane to ingest pane
 	@FXML
 	private void switchToIngest() throws IOException {
-		App.showNotification("Loading data...");
-		logger.info("Trying to switch to DriveIngest from Primary");
-//		Add a short delay before switching the pane
-		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-		delay.setOnFinished(event -> {
-			try {
-				App.setRoot("DriveIngest");
-			} catch (IOException e) {
-				logger.warn("Failed to load DriveIngest pane.");
-				logger.error("IOException", e);
-				App.showNotification("Failed to load DriveIngest pane.");
-			}
-		});
-		delay.play();
+		JavaFXTools.loadScene(FxmlView.INGEST);
 	}
 
 //	Changes pane to return pane
 	@FXML
 	private void switchToReturn() throws IOException {
-		App.showNotification("Loading data...");
-		logger.info("Trying to switch to DriveReturn from Primary");
-//		Add a short delay before switching the pane
-		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-		delay.setOnFinished(event -> {
-			try {
-				App.setRoot("DriveReturn");
-			} catch (IOException e) {
-				logger.warn("Failed to load DriveReturn pane.");
-				logger.error("IOException", e);
-				App.showNotification("Failed to load DriveReturn pane.");
-			}
-		});
-		delay.play();
+		JavaFXTools.loadScene(FxmlView.RETURN);
 	}
 
 //	Changes pane to query pane
 	@FXML
 	private void switchToQuery() throws IOException {
-		App.showNotification("Loading data...");
-		logger.info("Trying to switch to DriveQuery from Primary");
-//		Add a short delay before switching the pane
-		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-		delay.setOnFinished(event -> {
-			try {
-				App.setRoot("DriveQuery");
-			} catch (IOException e) {
-				logger.warn("Failed to load DriveQuery pane.");
-				logger.error("IOException", e);
-				App.showNotification("Failed to load DriveQuery pane.");
-			}
-		});
-		delay.play();
+		JavaFXTools.loadScene(FxmlView.QUERY);
+
 	}
 
 //	Executes user log out
 	@FXML
 	private void logoutButtonClicked() {
-		try {
-			GoogleTools.logUserOut();
-			LoginPageController.setCurrentUser(null);
-			switchToLoginPage();
-		} catch (IOException e) {
-			logger.warn("Failed to logout user from logoutButtonClicked");
-			logger.error("IOException", e);
-			App.showNotification("Failed to logout user");
-		}
-	}
-
-//	Changes pane to login page
-	private void switchToLoginPage() throws IOException {
-		App.showNotification("Loading Login page...");
-		logger.info("Trying to switch to LoginPage from Primary");
-//		Add a short delay before switching the pane
-		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-		delay.setOnFinished(event -> {
-			try {
-				App.setRoot("LoginPage");
-			} catch (IOException e) {
-				logger.warn("Failed to load LoginPage pane.");
-				logger.error("IOException", e);
-				App.showNotification("Failed to load LoginPage pane.");
-			}
-		});
-		delay.play();
+		GoogleTools.logUserOut();
+		LoginPageController.setCurrentUser(null);
+		JavaFXTools.loadScene(FxmlView.LOGIN);
 	}
 
 }

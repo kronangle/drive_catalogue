@@ -41,6 +41,8 @@ public class App extends Application {
 //	Constants for styling
 	private static final String WINDOW_TITLE = "CAS Drive Catalogue";
 	private static final String PRIMARY_ICON_FOR_APP = "/com/clearanglestudios/Images/primary_icon.jpg";
+	private static final int DEFAULT_WINDOW_WIDTH = 900;
+	private static final int DEFAULT_WINDOW_LENGTH = 650;
 
 //	For tests
 	public static boolean isTestEnvironment = false;
@@ -67,7 +69,7 @@ public class App extends Application {
 			App.stage = stage;
 
 //		Initialize the NotificationPane with the first FXML
-			Parent initialRoot = loadFXML("LoginPage");
+			Parent initialRoot = loadFXML(FxmlView.LOGIN.getFxmlName());
 			notificationPane = new NotificationPane(initialRoot);
 			notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
 
@@ -75,9 +77,9 @@ public class App extends Application {
 //		findUser();
 
 //      Create the scene with the NotificationPane as the root
-			scene = new Scene(notificationPane/* , 640, 480 */);
+			scene = new Scene(notificationPane, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_LENGTH);
 			stage.setScene(scene);
-			stage.setResizable(false);
+			stage.setResizable(true);
 
 //		Set the icon and title
 			stage.getIcons().add(new Image(getClass().getResourceAsStream(PRIMARY_ICON_FOR_APP)));
@@ -95,7 +97,7 @@ public class App extends Application {
 			App.stage = stage;
 
 //			Initialize the first FXML
-			Parent initialRoot = loadFXML("LoginPage");
+			Parent initialRoot = loadFXML(FxmlView.LOGIN.getFxmlName());
 			scene = new Scene(initialRoot);
 			stage.setScene(scene);
 			stage.setResizable(false);
@@ -189,6 +191,19 @@ public class App extends Application {
 //	Check if a notification is showing
 	public static boolean isNotificationShowing() {
 		return notificationPane.isShowing();
+	}
+
+//	===================================================================
+//	
+//						GETTERS & SETTERS
+//	
+//	===================================================================
+	public static Stage getStage() {
+		return stage;
+	}
+
+	public static NotificationPane getNotificationPane() {
+		return notificationPane;
 	}
 
 }

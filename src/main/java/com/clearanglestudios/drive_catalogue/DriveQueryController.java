@@ -128,7 +128,7 @@ public class DriveQueryController {
 	@FXML
 	public void initialize() {
 		logger.info("Initialising DriveQueryController");
-		App.hideNotification();
+//		App.hideNotification();
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveQuery.setText(loggedInLabelSpacing + loggedInLabelText
@@ -540,11 +540,7 @@ public class DriveQueryController {
 
 	@FXML
 	private void finishedButtonClicked() {
-		try {
-			JavaFXTools.switchToHome();
-		} catch (IOException e) {
-			JavaFXTools.logIOExceptionFromHomePage("finishedButtonClicked", e);
-		}
+		JavaFXTools.loadScene(FxmlView.HOME);
 	}
 
 //	Toggles the visibility of the drive properties table

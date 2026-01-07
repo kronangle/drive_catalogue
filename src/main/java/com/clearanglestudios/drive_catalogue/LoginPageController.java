@@ -98,12 +98,12 @@ public class LoginPageController {
 		delay.setOnFinished(event -> {
 			try {
 				if (currentUser != null) {
-					JavaFXTools.switchToHome();
+					JavaFXTools.loadScene(FxmlView.HOME);
 				} else {
 					logger.info("No user set");
 					logger.info("Attempting to getCurrentUser");
 					currentUser = getCurrentUser();
-					JavaFXTools.switchToHome();
+					JavaFXTools.loadScene(FxmlView.HOME);
 					App.bringStageToFront();
 				}
 

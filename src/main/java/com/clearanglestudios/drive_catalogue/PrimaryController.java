@@ -39,6 +39,10 @@ public class PrimaryController {
 	private Button queryButton_Primary;
 	@FXML
 	private Label loggedInLabel_primary;
+	@FXML
+	private Label lastSyncLabel_Primary;
+	@FXML
+	private Button refreshButton_Primary;
 
 //	-------------------------------------------------------------------------------------
 
@@ -70,6 +74,7 @@ public class PrimaryController {
 //		Hide ingest button if user is not a part of the IT department
 		checkPermsForIngestButton();
 //		-------------------------------------------------------------------------------------
+		lastSyncLabel_Primary.setText("  Last Synced: " + GoogleTools.getLastSyncTime() + "  ");
 		logger.info("COMPLETED Initialising PrimaryController");
 	}
 
@@ -89,6 +94,20 @@ public class PrimaryController {
 		}
 	}
 
+//	=====================================================================================
+//	
+//									DATA MANAGEMENT
+//	
+//	=====================================================================================
+	
+	@FXML
+	private void refreshButtonClicked() {
+		logger.info("Manual Refresh Triggered from Home Page");
+//        -------------------------------------
+        GoogleTools.clearCache();
+        lastSyncLabel_Primary.setText("  Last Synced: --:--  ");
+	}
+	
 //	=====================================================================================
 //	
 //									JAVAFX METHODS

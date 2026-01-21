@@ -21,6 +21,16 @@
       <Button fx:id="queryButton_Primary" mnemonicParsing="false" onAction="#switchToQuery" prefWidth="63.0" styleClass="custom-button" text="QUERY" />
       <Button fx:id="logoutButton_Primary" mnemonicParsing="false" onAction="#logoutButtonClicked" styleClass="custom-button" text="LOGOUT" />
       <Label fx:id="loggedInLabel_primary" styleClass="custom-label" text="Logged in as: " textFill="WHITE" />
+      <Label fx:id="lastSyncLabel_Primary" alignment="CENTER" focusTraversable="false" styleClass="custom-label" text="  Last Synced:   --:--" textAlignment="CENTER" />
+      <Button fx:id="refreshButton_Primary" mnemonicParsing="false" onAction="#refreshButtonClicked" styleClass="custom-button">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../Images/pngtree-white-refresh-icon-image_1338657.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
    </children>
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />

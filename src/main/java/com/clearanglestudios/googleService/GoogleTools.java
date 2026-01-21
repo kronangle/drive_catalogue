@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -32,6 +35,7 @@ import com.clearanglestudios.drive_catalogue.App;
 import com.clearanglestudios.drive_catalogue.LoginPageController;
 import com.clearanglestudios.objects.Crew;
 import com.clearanglestudios.objects.Drive;
+import com.clearanglestudios.objects.SheetUpdate;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -63,7 +67,8 @@ public class GoogleTools {
 
 //	Google spreadsheet constant values
 	private static final String SPREADSHEET_ID = "1DrFLxok8YfehhbIxcbreBVV-kN__MIzf9BFJQEP7d_o"; // Which sheet
-	private static final String ACTIVE_SHEET = "drive_catalogue";
+//	private static final String ACTIVE_SHEET = "drive_catalogue";
+	private static final String ACTIVE_SHEET = "drive_catalogue_test";
 	private static final String DRIVE_DATA_SHEET_AND_RANGE = ACTIVE_SHEET + "!A8:K170"; // where to get drive data
 	private static final String UPDATE_RANGE = ACTIVE_SHEET + "!A";
 	private static final String CREW_DATA_SHEET_AND_RANGE = "data_reference!A2:D70"; // where to get crew data
@@ -74,11 +79,8 @@ public class GoogleTools {
 	private static final String APPLICATION_NAME = "CAS Drive Catalogue";
 	private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 	private static final String TOKENS_DIRECTORY_PATH = "tokens";
-	private static final List<String> SCOPES = Arrays.asList(
-			PeopleServiceScopes.USERINFO_PROFILE,
-			SheetsScopes.SPREADSHEETS, 
-			GmailScopes.GMAIL_SEND, 
-			PeopleServiceScopes.USERINFO_EMAIL);
+	private static final List<String> SCOPES = Arrays.asList(PeopleServiceScopes.USERINFO_PROFILE,
+			SheetsScopes.SPREADSHEETS, GmailScopes.GMAIL_SEND, PeopleServiceScopes.USERINFO_EMAIL);
 
 //	File path to client ID json 
 	private static final String CREDENTIALS_FILE_PATH = "/com/clearanglestudios/important_files/client_secret.json";
@@ -113,10 +115,16 @@ public class GoogleTools {
 	private static final String EMAIL_LABEL_DATE = "Date";
 	private static final String EMAIL_LABEL_DETAILS = "Details";
 
+//	Cache Storage
+	private static Map<String, List<List<Object>>> dataCache = new HashMap<>();
+	private static LocalDateTime lastSyncTime = null;
+
 //	-------------------------------------------------------------------------------------
 
-//	Initialize Logger
+//	Initialise Logger
 	private static final Logger logger = LogManager.getLogger(GoogleTools.class);
+//	Initialise ExecutorService with 1 Thread
+	private static final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
 
 //	=====================================================================================
 //	
@@ -209,6 +217,13 @@ public class GoogleTools {
 	public static List<List<Object>> readValuesFromSheet(String range, int total_columns)
 			throws GeneralSecurityException, IOException {
 //		--------------------------------------
+//		 	Check the cache
+		if (dataCache.containsKey(range)) {
+			logger.info("YES CACHE: Returning data for range: " + range);
+			return dataCache.get(range);
+		}
+		logger.info("NO CACHE: Fetching fresh data from Google for range: " + range);
+//		--------------------------------------
 //		    Get an authenticated Sheets service to work with
 		Sheets service = getSheetsService();
 //		    Use the service and convert the spreadsheet to values
@@ -237,6 +252,11 @@ public class GoogleTools {
 
 			valuesClean.add(paddedRow);
 		}
+//		--------------------------------------
+//		Store values in cache Map
+		dataCache.put(range, valuesClean);
+		lastSyncTime = LocalDateTime.now();
+//		--------------------------------------
 		return valuesClean;
 	}
 
@@ -410,6 +430,38 @@ public class GoogleTools {
 		return itEmails;
 	}
 
+//	Clears the local memory cache.
+	public static void clearCache() {
+		logger.info("Clearing local data cache.");
+		dataCache.clear();
+	}
+
+//	Return the time that the cache was last synced to the Google Sheet
+	public static String getLastSyncTime() {
+		if (lastSyncTime == null)
+			return "Never";
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+		return lastSyncTime.format(formatter);
+	}
+
+	/**
+	 * Adds an update task to the background queue.
+	 * This returns IMMEDIATELY, allowing the UI to stay responsive.
+	 */
+	public static void queueSheetUpdate(SheetUpdate action) {
+	    logger.info("Queuing update task...");
+
+	    // Submit the task to the background thread
+	    updateQueue.submit(() -> {
+	        try {
+	            logger.info("Processing queue item...");
+	            pushChangesToSheet(action.getInfo());
+	        } catch (Exception e) {
+	            logger.error("Background Queue Failed", e);
+	        }
+	    });
+	}
+	
 //	=====================================================================================
 //	
 //								EMAIL MANAGEMENT METHODS
@@ -782,6 +834,9 @@ public class GoogleTools {
 //		----------------------------------------
 //		Write the updated row back to the spreadsheet
 		commitChangesToSheet(targetRowIndex, targetRow);
+//		----------------------------------------
+//		Forget stale data in cache
+		clearCache();
 //		----------------------------------------
 //		Send email to involved parties
 		try {

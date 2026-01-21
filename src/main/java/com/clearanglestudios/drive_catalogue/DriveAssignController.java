@@ -14,11 +14,13 @@ import org.apache.logging.log4j.Logger;
 import com.clearanglestudios.googleService.GoogleTools;
 import com.clearanglestudios.objects.Crew;
 import com.clearanglestudios.objects.Drive;
+import com.clearanglestudios.objects.SheetUpdate;
 
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -81,19 +83,20 @@ public class DriveAssignController {
 	private static final String DRIVE_NAME_KEY = "DriveName";
 	private static final String CREW_NAME_KEY = "CrewName";
 	private static final String DETAILS_KEY = "Details";
-	
+
 //	Statuses
 	private static final String STATUS_TO_APPLY = "out";
 	private static final String STATUS_TO_FIND = "in";
-	
+
 //	Option controls for choice and combo boxes
 	private static final String DEFAULT = "All";
-	
+
 //	----------------------------------------------------------------
 
 //	Logged in user label
 	private static final String loggedInLabelText = "Logged in as: ";
 	private static final String loggedInLabelSpacing = "  ";
+
 
 //	===================================================================
 //	
@@ -144,6 +147,8 @@ public class DriveAssignController {
 		setupChoiceBoxes();
 		setupComboBoxes();
 //		-------------------------------------------------
+		
+		
 		logger.info("COMPLETED Initialising DriveIngestController");
 	}
 
@@ -262,14 +267,15 @@ public class DriveAssignController {
 	}
 
 //	----------------------------------------------------------------
-	
+
 //	Logic for filtering by size
 	private void sizeSelected() {
 		isUpdatingDrives = true;
 		driveComboBox_DriveAssign.getItems().clear();
 		obserableDriveList.clear();
 		try {
-			obserableDriveList.addAll(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND, sizeChoiceBox_DriveAssign.getValue()));
+			obserableDriveList
+					.addAll(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND, sizeChoiceBox_DriveAssign.getValue()));
 			driveComboBox_DriveAssign.getItems().addAll(obserableDriveList);
 		} catch (GeneralSecurityException e) {
 			GoogleTools.logGeneralSecurityException("Size - Filtered Drive", e);
@@ -338,7 +344,7 @@ public class DriveAssignController {
 		}
 
 	}
-	
+
 //	----------------------------------------------------------------
 
 //	Returns active the text field object
@@ -346,13 +352,15 @@ public class DriveAssignController {
 		return (!productionTextField_DriveAssign.isDisable()) ? productionTextField_DriveAssign
 				: otherTextField_DriveAssign;
 	}
-	
+
 //	Reset the fields on the form
 	private void resetForm() {
-		productionRadioButton_DriveAssign.setText("");
+		productionTextField_DriveAssign.setText("");
 		otherTextField_DriveAssign.setText("");
 		sizeChoiceBox_DriveAssign.setValue(DEFAULT);
 		departmentChoiceBox_DriveAssign.setValue(DEFAULT);
+		driveComboBox_DriveAssign.setValue("");
+//		crewComboBox_DriveAssign.setValue("");
 	}
 
 //	===================================================================
@@ -362,55 +370,108 @@ public class DriveAssignController {
 //	===================================================================
 
 //	Submits the form
+//	@FXML
+//	private void assignButtonClicked() {
+//		App.showNotification("Processing...");
+//		logger.info("Processing data from assignButtonClicked");
+////		Add a short delay before switching the pane
+//		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
+//		delay.setOnFinished(event -> {
+//			try {
+//				String[] info = gatherInfoFromFields();
+//
+//				if (info != null) {
+////					Get results from verifying the info package
+//					Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
+//
+////					Execute form submission if no false values
+//					if (!verifyResults.values().contains(false)) {
+//						GoogleTools.pushChangesToSheet(info);
+//						logger.info("COMPLETED PROCESSING INFO");
+//						resetForm();
+//						JavaFXTools.loadScene(FxmlView.HOME);
+//					} else {
+////						The final error message to show
+//						StringBuilder notification = new StringBuilder();
+////	 					Check fields that were verified, if false Highlight and return error message
+//						JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveAssign, notification);
+//						JavaFXTools.verifyField(verifyResults, CREW_NAME_KEY, crewComboBox_DriveAssign, notification);
+//						JavaFXTools.verifyField(verifyResults, DETAILS_KEY, getActiveTextField(), notification);
+////						Show and log error if it exists
+//						if (!notification.isEmpty()) {
+//							logger.warn(String.format(("Invalid input detected:\n" + notification)));
+//							App.showNotification("Invalid input detected:\n" + notification.toString());
+//						}
+//					}
+//
+//				} else {
+//					logger.warn("info is null");
+//					App.showNotification("There is no info to push to spreadsheet");
+//				}
+//			} catch (IOException e) {
+//				logger.warn("Failed to push changes to the spreadsheet");
+//				logger.error("IOException - ", e);
+//				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
+//			} catch (GeneralSecurityException e) {
+//				logger.warn("Failed to push changes to the spreadsheet");
+//				logger.error("GeneralSecurityException - ", e);
+//				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
+//			}
+//		});
+//		delay.play();
+//	}
+	
 	@FXML
 	private void assignButtonClicked() {
-		App.showNotification("Processing...");
 		logger.info("Processing data from assignButtonClicked");
-//		Add a short delay before switching the pane
-		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-		delay.setOnFinished(event -> {
-			try {
-				String[] info = gatherInfoFromFields();
 
-				if (info != null) {
-//					Get results from verifying the info package
-					Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
+		String[] info = gatherInfoFromFields();
 
-//					Execute form submission if no false values
-					if (!verifyResults.values().contains(false)) {
-						GoogleTools.pushChangesToSheet(info);
-						logger.info("COMPLETED PROCESSING INFO");
-						resetForm();
-						JavaFXTools.loadScene(FxmlView.HOME);
-					} else {
-//						The final error message to show
-						StringBuilder notification = new StringBuilder();
-//	 					Check fields that were verified, if false Highlight and return error message
-						JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveAssign, notification);
-						JavaFXTools.verifyField(verifyResults, CREW_NAME_KEY, crewComboBox_DriveAssign, notification);
-						JavaFXTools.verifyField(verifyResults, DETAILS_KEY, getActiveTextField(), notification);
-//						Show and log error if it exists
-						if (!notification.isEmpty()) {
-							logger.warn(String.format(("Invalid input detected:\n" + notification)));
-							App.showNotification("Invalid input detected:\n" + notification.toString());
-						}
-					}
+		if (info == null) {
+			logger.warn("info is null");
+			App.showNotification("There is no info to push to spreadsheet");
+			return;
+		}
 
-				} else {
-					logger.warn("info is null");
-					App.showNotification("There is no info to push to spreadsheet");
+		try {
+			// VERIFY DATA 
+			Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
+
+			// CHECK FOR ERRORS
+			if (verifyResults.values().contains(false)) {
+				StringBuilder notification = new StringBuilder();
+
+				JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveAssign, notification);
+				JavaFXTools.verifyField(verifyResults, CREW_NAME_KEY, crewComboBox_DriveAssign, notification);
+				JavaFXTools.verifyField(verifyResults, DETAILS_KEY, getActiveTextField(), notification);
+
+				// Show error
+				if (!notification.isEmpty()) {
+					logger.warn(String.format(("Invalid input detected:\n" + notification)));
+					App.showNotification("Invalid input detected:\n" + notification.toString());
 				}
-			} catch (IOException e) {
-				logger.warn("Failed to push changes to the spreadsheet");
-				logger.error("IOException - ", e);
-				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
-			} catch (GeneralSecurityException e) {
-				logger.warn("Failed to push changes to the spreadsheet");
-				logger.error("GeneralSecurityException - ", e);
-				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
+				return; // Do not queue invalid data.
 			}
-		});
-		delay.play();
+
+			// Create ticket and send to background thread 
+			SheetUpdate ticket = new SheetUpdate(info);
+			GoogleTools.queueSheetUpdate(ticket);
+
+			logger.info("Assignment task queued successfully. Form reset for next entry.");
+
+			// Clear the form 
+			resetForm();
+			App.showNotification("Assignment queued! Ready for next entry.");
+
+		} catch (IOException e) {
+			logger.warn("Failed during validation check");
+			logger.error("IOException - ", e);
+			App.showNotification("Validation Error - " + e.getMessage());
+		} catch (GeneralSecurityException e) {
+			logger.warn("Failed during validation check");
+			logger.error("GeneralSecurityException - ", e);
+			App.showNotification("Validation Error - " + e.getMessage());
+		}
 	}
 
 //	Cancels the form

@@ -87,6 +87,10 @@ public class JavaFXTools {
 		return fxmlLoader.load();
 	}
 
+	
+	
+	
+	
 	// =====================================================================================
 	//
 	// VERIFICATION METHODS

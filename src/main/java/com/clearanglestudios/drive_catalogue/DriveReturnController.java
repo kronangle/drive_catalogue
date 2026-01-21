@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.clearanglestudios.googleService.GoogleTools;
+import com.clearanglestudios.objects.SheetUpdate;
 
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
@@ -154,55 +155,101 @@ public class DriveReturnController {
 //	=====================================================================================
 
 //	Submits the form
+//	@FXML
+//	private void returnButtonClickedOld() {
+//		App.showNotification("Processing...");
+//		logger.info("Processing data from returnButtonClicked");
+////		Add a short delay before switching the pane
+//		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
+//		delay.setOnFinished(event -> {
+//			try {
+//				String[] info = gatherInfoFromFields();
+//
+//				if (info != null) {
+////					Get results from verifying the info package
+//					Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
+//
+////					Execute form submission if no false values
+//					if (!verifyResults.values().contains(false)) {
+//						GoogleTools.pushChangesToSheet(info);
+//						logger.info("COMPLETED PROCESSING INFO");
+//						resetForm();
+//						JavaFXTools.loadScene(FxmlView.HOME);
+//					} else {
+////						The final error message to show
+//						StringBuilder notification = new StringBuilder();
+////						Check fields that were verified, if false Highlight and return error message
+//						JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveReturn, notification);
+////						Show and log error if it exists
+//						if (!notification.isEmpty()) {
+//							logger.warn(String.format(("Invalid input detected:\n" + notification)));
+//							App.showNotification("Invalid input detected:\n" + notification.toString());
+//						}
+//					}
+//
+//				} else {
+//					logger.warn("info is null");
+//					App.showNotification("There is no info to push to spreadsheet");
+//				}
+//			} catch (IOException e) {
+//				logger.warn("Failed to push changes to the spreadsheet");
+//				logger.error("IOException - ", e);
+//				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
+//			} catch (GeneralSecurityException e) {
+//				logger.warn("Failed to push changes to the spreadsheet");
+//				logger.error("GeneralSecurityException - ", e);
+//				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
+//			}
+//		});
+//		delay.play();
+//	}
+
 	@FXML
-	private void returnButtonClicked() {
-		App.showNotification("Processing...");
-		logger.info("Processing data from returnButtonClicked");
-//		Add a short delay before switching the pane
-		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-		delay.setOnFinished(event -> {
-			try {
-				String[] info = gatherInfoFromFields();
+    private void returnButtonClicked() {
+        logger.info("Processing data from returnButtonClicked");
 
-				if (info != null) {
-//					Get results from verifying the info package
-					Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
+        String[] info = gatherInfoFromFields();
 
-//					Execute form submission if no false values
-					if (!verifyResults.values().contains(false)) {
-						GoogleTools.pushChangesToSheet(info);
-						logger.info("COMPLETED PROCESSING INFO");
-						resetForm();
-						JavaFXTools.loadScene(FxmlView.HOME);
-					} else {
-//						The final error message to show
-						StringBuilder notification = new StringBuilder();
-//						Check fields that were verified, if false Highlight and return error message
-						JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveReturn, notification);
-//						Show and log error if it exists
-						if (!notification.isEmpty()) {
-							logger.warn(String.format(("Invalid input detected:\n" + notification)));
-							App.showNotification("Invalid input detected:\n" + notification.toString());
-						}
-					}
+        if (info == null) {
+            logger.warn("info is null");
+            App.showNotification("There is no info to save");
+            return;
+        }
 
-				} else {
-					logger.warn("info is null");
-					App.showNotification("There is no info to push to spreadsheet");
-				}
-			} catch (IOException e) {
-				logger.warn("Failed to push changes to the spreadsheet");
-				logger.error("IOException - ", e);
-				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
-			} catch (GeneralSecurityException e) {
-				logger.warn("Failed to push changes to the spreadsheet");
-				logger.error("GeneralSecurityException - ", e);
-				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
-			}
-		});
-		delay.play();
-	}
+        try {
+            Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
 
+            if (verifyResults.values().contains(false)) {
+                StringBuilder notification = new StringBuilder();
+                // Highlight the UI fields
+                JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveReturn, notification);
+
+                if (!notification.isEmpty()) {
+                    logger.warn("Invalid input detected:\n" + notification);
+                    App.showNotification("Invalid input detected:\n" + notification.toString());
+                }
+                return; // Don't queue invalid data
+            }
+
+            
+            SheetUpdate updateTask = new SheetUpdate(info);
+            GoogleTools.queueSheetUpdate(updateTask); 
+            
+            logger.info("Update queued successfully. Navigating home.");
+            App.showNotification("Saving in background...");
+
+            resetForm();
+            //JavaFXTools.loadScene(FxmlView.HOME);
+            App.showNotification("Drive queued! Ready for next entry.");
+            logger.info("Task queued. Form reset for next entry.");
+
+        } catch (IOException | GeneralSecurityException e) {
+            logger.warn("Validation check failed");
+            logger.error("Exception during validation", e);
+            App.showNotification("Error checking data - " + e.getMessage());
+        }
+    }
+	
 //	Cancels the form
 	@FXML
 	private void cancelButtonClicked() {

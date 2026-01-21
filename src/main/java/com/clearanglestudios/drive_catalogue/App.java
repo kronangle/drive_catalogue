@@ -1,11 +1,14 @@
 package com.clearanglestudios.drive_catalogue;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -179,8 +182,19 @@ public class App extends Application {
 
 //	Show a notification
 	public static void showNotification(String message) {
-		notificationPane.setText(message);
-		notificationPane.show();
+		// Check which thread call is on
+        if (Platform.isFxApplicationThread()) {
+            if (notificationPane != null) {
+                notificationPane.setText(message);
+                notificationPane.show();
+                
+                PauseTransition delay = new PauseTransition(Duration.seconds(3));
+                delay.setOnFinished(e -> hideNotification());
+                delay.play();
+            }
+        } else {
+            Platform.runLater(() -> showNotification(message));
+        }
 	}
 
 //	Hide the notification

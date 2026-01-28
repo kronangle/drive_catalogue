@@ -97,7 +97,7 @@ public class DriveIngestController {
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveIngest.setText(loggedInLabelSpacing + loggedInLabelText
-				+ LoginPageController.getCurrentUserName() + loggedInLabelSpacing);
+				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Add a listener to filter items based on input
 		driveComboBox_DriveIngest.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {

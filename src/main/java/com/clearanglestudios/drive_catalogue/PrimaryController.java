@@ -69,7 +69,7 @@ public class PrimaryController {
 //		-------------------------------------------------------------------------------------
 //		Set the label to the current user's name
 		loggedInLabel_primary.setText(loggedInLabelSpacing + loggedInLabelText
-				+ LoginPageController.getCurrentUserName() + loggedInLabelSpacing);
+				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------------------------------------------
 //		Hide ingest button if user is not a part of the IT department
 		checkPermsForIngestButton();
@@ -80,7 +80,7 @@ public class PrimaryController {
 
 //	Disable ingest button if user is not a part of the IT department
 	private void checkPermsForIngestButton() {
-		String currentUserEmail = LoginPageController.getCurrentUserEmail();
+		String currentUserEmail = GoogleTools.getCurrentUserEmail();
 //		Compare email address against the lookup table from the spreadsheet
 		try {
 			ArrayList<String> itEmailAddresses = GoogleTools.getITEmailAddresses();
@@ -143,7 +143,7 @@ public class PrimaryController {
 	@FXML
 	private void logoutButtonClicked() {
 		GoogleTools.logUserOut();
-		LoginPageController.setCurrentUser(null);
+		GoogleTools.clearCurrentUser();
 		JavaFXTools.loadScene(FxmlView.LOGIN);
 	}
 

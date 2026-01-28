@@ -7,6 +7,7 @@ public enum FxmlView {
     INGEST("DriveIngest"),
     RETURN("DriveReturn"),
     QUERY("DriveQuery"),
+    SPLASH("SplashScreen"),
     LOGIN("LoginPage");
 
     private final String fxmlFileName;

@@ -86,7 +86,7 @@ public class DriveReturnController {
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveRetrun.setText(loggedInLabelSpacing + loggedInLabelText
-				+ LoginPageController.getCurrentUserName() + loggedInLabelSpacing);
+				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Add a listener to filter items based on input to combo box
 		driveComboBox_DriveReturn.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {

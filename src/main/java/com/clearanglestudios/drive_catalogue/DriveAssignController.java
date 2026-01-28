@@ -113,7 +113,7 @@ public class DriveAssignController {
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveAssign.setText(loggedInLabelSpacing + loggedInLabelText
-				+ LoginPageController.getCurrentUserName() + loggedInLabelSpacing);
+				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Try get Drive data from the spreadsheet
 		try {

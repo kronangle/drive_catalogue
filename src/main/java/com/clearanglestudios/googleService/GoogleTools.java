@@ -53,6 +53,7 @@ import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.people.v1.PeopleService;
 import com.google.api.services.people.v1.PeopleServiceScopes;
+import com.google.api.services.people.v1.model.Person;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -75,7 +76,7 @@ public class GoogleTools {
 	private static final String PC_DATA_SHEET_AND_RANGE = "data_reference!G2:G100"; // where to get pc data
 	private static final String IT_EMAIL_DATA_SHEET_AND_RANGE = "data_reference!J2:J100"; // where to get iT data
 
-//	Google constant values
+//	Google constant values/
 	private static final String APPLICATION_NAME = "CAS Drive Catalogue";
 	private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 	private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -126,6 +127,9 @@ public class GoogleTools {
 //	Initialise ExecutorService with 1 Thread
 	private static final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
 
+//	User session data
+	private static Person currentUser;
+
 //	=====================================================================================
 //	
 //									GOOGLE METHODS
@@ -174,36 +178,62 @@ public class GoogleTools {
 	 * @return An authorized Credential object.
 	 * @throws IOException If the credentials.json file cannot be found.
 	 */
+//	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+////	  --------------------------------------
+////		Load client secrets.
+//		InputStream in = GoogleTools.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+//		if (in == null) {
+//			logger.error("Resource not found: " + CREDENTIALS_FILE_PATH);
+//			throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
+//		}
+//		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
+////    --------------------------------------
+////		Build flow and trigger user authorization request.
+//		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,
+//				clientSecrets, SCOPES)
+//				.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+//				.setAccessType("offline").build();
+////    --------------------------------------
+////		Set the receiver
+////		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(0).build();
+////		logger.info("Getting free port...");
+////		int freePort = getFreePort();
+////		logger.info("Using free port: " + freePort);
+//		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(/*freePort*/-1).build();
+//		logger.info("Created LocalServerReceiver at URI: " + receiver.getRedirectUri());
+////    --------------------------------------
+//		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+////    --------------------------------------
+//	}
+
 	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
-//	  --------------------------------------
-//		Load client secrets.
+//		  --------------------------------------
+//			Load client secrets.
 		InputStream in = GoogleTools.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
 		if (in == null) {
 			logger.error("Resource not found: " + CREDENTIALS_FILE_PATH);
 			throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
 		}
 		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-//    --------------------------------------
-//		Build flow and trigger user authorization request.
+		//     --------------------------------------
+//			Build flow
 		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,
 				clientSecrets, SCOPES)
 				.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
 				.setAccessType("offline").build();
-//    --------------------------------------
-//		Set the receiver
-//		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(0).build();
-		logger.info("Getting free port...");
-		int freePort = getFreePort();
-		logger.info("Using free port: " + freePort);
-		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(freePort).build();
-		logger.info("Created LocalServerReceiver at URI: " + receiver.getRedirectUri());
-//    --------------------------------------
+		//     --------------------------------------
+//			Set the receiver
+//	      FIX 1: Force IPv4 (127.0.0.1) and Port -1 (Auto).
+//	      FIX 2: Do NOT call getRedirectUri() here. It starts the server too early.
+		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setHost("127.0.0.1").setPort(-1).build();
+
+		logger.info("Created LocalServerReceiver (Auto-Port). Handing off to Authorization App.");
+		//     --------------------------------------
 		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-//    --------------------------------------
 	}
 
 	private static int getFreePort() {
-		try (ServerSocket socket = new ServerSocket(8888)) {
+		try (ServerSocket socket = new ServerSocket(0)) {
 			socket.setReuseAddress(true);
 			return socket.getLocalPort();
 		} catch (IOException e) {
@@ -260,6 +290,12 @@ public class GoogleTools {
 		return valuesClean;
 	}
 
+//	=================================================================
+//	
+//							 USER SESSION DATA
+//	
+//	=================================================================
+
 //	---------------------------- User Logout Method -------------------------------------
 
 //	Allows the user to log out of their account
@@ -277,6 +313,76 @@ public class GoogleTools {
 		}
 	}
 
+//	--------------------------- Start up user checks ------------------------------------
+
+	/**
+	 * Checks if the stored credentials are valid by attempting a lightweight API
+	 * call.
+	 * 
+	 * @return true if the token works, false if missing or expired.
+	 */
+	public static boolean isTokenValid() {
+		File tokenFile = new File(TOKENS_DIRECTORY_PATH + "/StoredCredential");
+		if (!tokenFile.exists()) {
+			return false;
+		}
+
+		try {
+			Sheets service = getSheetsService();
+			service.spreadsheets().get(SPREADSHEET_ID).setFields("properties").execute();
+
+			logger.info("Token validation successful. User is logged in.");
+			return true;
+
+		} catch (Exception e) {
+			logger.warn("Token validation failed. Credential might be expired.", e);
+			// If the token is bad, delete it
+			logUserOut();
+			return false;
+		}
+	}
+
+	/**
+     * Fetches the user's profile data (Name, Email) from Google 
+     * and stores it in memory.
+     */
+    public static void fetchUserInfo() throws IOException, GeneralSecurityException {
+        PeopleService peopleService = getPeopleService();
+
+        currentUser = peopleService.people().get("people/me")
+                .setPersonFields("names,emailAddresses")
+                .execute();
+                
+        logger.info("User info fetched successfully.");
+    }
+
+    /**
+     * Returns the full name of the logged-in user.
+     * Safe to call from any controller (returns "Unknown" if null).
+     */
+    public static String getCurrentUserName() {
+        if (currentUser != null && !currentUser.getNames().isEmpty()) {
+            return currentUser.getNames().get(0).getDisplayName();
+        }
+        return "Unknown User";
+    }
+
+    /**
+     * Returns the email of the logged-in user.
+     */
+    public static String getCurrentUserEmail() {
+        if (currentUser != null && !currentUser.getEmailAddresses().isEmpty()) {
+            return currentUser.getEmailAddresses().get(0).getValue();
+        }
+        return "unknown@email.com";
+    }
+    
+    public static void clearCurrentUser() {
+		currentUser = null;
+		logger.info("Current user cleared");
+	}
+
+	
 //	=====================================================================================
 //	
 //								DATA MANAGEMENT METHODS
@@ -445,23 +551,23 @@ public class GoogleTools {
 	}
 
 	/**
-	 * Adds an update task to the background queue.
-	 * This returns IMMEDIATELY, allowing the UI to stay responsive.
+	 * Adds an update task to the background queue. This returns IMMEDIATELY,
+	 * allowing the UI to stay responsive.
 	 */
 	public static void queueSheetUpdate(SheetUpdate action) {
-	    logger.info("Queuing update task...");
+		logger.info("Queuing update task...");
 
-	    // Submit the task to the background thread
-	    updateQueue.submit(() -> {
-	        try {
-	            logger.info("Processing queue item...");
-	            pushChangesToSheet(action.getInfo());
-	        } catch (Exception e) {
-	            logger.error("Background Queue Failed", e);
-	        }
-	    });
+		// Submit the task to the background thread
+		updateQueue.submit(() -> {
+			try {
+				logger.info("Processing queue item...");
+				pushChangesToSheet(action.getInfo());
+			} catch (Exception e) {
+				logger.error("Background Queue Failed", e);
+			}
+		});
 	}
-	
+
 //	=====================================================================================
 //	
 //								EMAIL MANAGEMENT METHODS
@@ -543,7 +649,7 @@ public class GoogleTools {
 //	    ----------------------------------------
 //		Declare parameters for the email
 		String toEmailAddress = getEmailPrefix(crewToEmail) + COMPANY_EMAIL_SUFFIX;
-		String fromEmailAddress = LoginPageController.getCurrentUserEmail();
+		String fromEmailAddress = getCurrentUserEmail();
 		String subject = String.format(EMAIL_ALERT_SUBJECT, driveName, status, date);
 		String bodyText = String.format(EMAIL_ALERT_BODY, crewToEmail, EMAIL_LABEL_DRIVE, driveName, EMAIL_LABEL_STATUS,
 				status, EMAIL_LABEL_DATE, date, EMAIL_LABEL_DETAILS, details, loggerPerson);
@@ -820,7 +926,7 @@ public class GoogleTools {
 		String today = getTodaysDate();
 //		----------------------------------------
 //      Get the user's name
-		String loggersName = LoginPageController.getCurrentUserName();
+		String loggersName = getCurrentUserName();
 //		----------------------------------------
 //		Get crew name from target row if crew value will get wiped
 		String crewToEmail = getCrewToEmail(info[2], (String) targetRow.get(5));
@@ -940,4 +1046,5 @@ public class GoogleTools {
 		App.showNotification(String.format("Failed to get %s data", clue));
 	}
 
+	
 }

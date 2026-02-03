@@ -24,4 +24,4 @@ jobs:
 
     - name: Build with Maven
       # Skipping tests temporarily to ensure the build pipeline works 
-      run: mvn -B package --file pom.xml -DskipTests
+      run: mvn -B package --file pom.xml #-DskipTests

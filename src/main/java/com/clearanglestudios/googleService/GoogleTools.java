@@ -1015,7 +1015,7 @@ public class GoogleTools {
 	 * 
 	 * @return Today's date
 	 */
-	private static String getTodaysDate() {
+	public static String getTodaysDate() {
 // 		----------------------------------------
 // 		Get today's date
 		LocalDate today = LocalDate.now();

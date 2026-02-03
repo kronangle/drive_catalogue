@@ -20,7 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 
-public class PrimaryController {
+public class KeyHomeController {
 
 //	=====================================================================================
 //	
@@ -30,26 +30,24 @@ public class PrimaryController {
 
 //	User input fields and controls
 	@FXML
-	private Button assignButton_Primary;
+	private Button assignButton_KeyHome;
 	@FXML
-	private Button ingestButton_Primary;
+	private Button returnButton_KeyHome;
 	@FXML
-	private Button returnButton_Primary;
+	private Label loggedInLabel_KeyHome;
 	@FXML
-	private Button queryButton_Primary;
+	private Label lastSyncLabel_KeyHome;
 	@FXML
-	private Label loggedInLabel_primary;
+	private Button refreshButton_KeyHome;
 	@FXML
-	private Label lastSyncLabel_Primary;
+	private Button driveButton_KeyHome;
 	@FXML
-	private Button refreshButton_Primary;
-	@FXML
-	private Button keyButton_Primary;
+	private Button logoutButton_KeyHome;
 
 //	-------------------------------------------------------------------------------------
 
 //	Initialize Logger
-	private static final Logger logger = LogManager.getLogger(PrimaryController.class);
+	private static final Logger logger = LogManager.getLogger(KeyHomeController.class);
 
 //	-------------------------------------------------------------------------------------
 
@@ -66,35 +64,17 @@ public class PrimaryController {
 //	Runs before displaying the pane
 	@FXML
 	private void initialize() {
-		logger.info("Initialising PrimaryController");
+		logger.info("Initialising KeyHome");
 //		App.hideNotification();
 //		-------------------------------------------------------------------------------------
 //		Set the label to the current user's name
-		loggedInLabel_primary.setText(loggedInLabelSpacing + loggedInLabelText
+		loggedInLabel_KeyHome.setText(loggedInLabelSpacing + loggedInLabelText
 				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------------------------------------------
-//		Hide ingest button if user is not a part of the IT department
-		checkPermsForIngestButton();
-//		-------------------------------------------------------------------------------------
-		lastSyncLabel_Primary.setText("  Last Synced: " + GoogleTools.getLastSyncTime() + "  ");
-		logger.info("COMPLETED Initialising PrimaryController");
+		lastSyncLabel_KeyHome.setText("  Last Synced: " + GoogleTools.getLastSyncTime() + "  ");
+		logger.info("COMPLETED Initialising KeyHome");
 	}
 
-//	Disable ingest button if user is not a part of the IT department
-	private void checkPermsForIngestButton() {
-		String currentUserEmail = GoogleTools.getCurrentUserEmail();
-//		Compare email address against the lookup table from the spreadsheet
-		try {
-			ArrayList<String> itEmailAddresses = GoogleTools.getITEmailAddresses();
-			if (!itEmailAddresses.contains(currentUserEmail)) {
-				ingestButton_Primary.setDisable(true);
-			}
-		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("IT", e);
-		} catch (IOException e) {
-			GoogleTools.logIOException("IT", e);
-		}
-	}
 
 //	=====================================================================================
 //	
@@ -104,10 +84,10 @@ public class PrimaryController {
 	
 	@FXML
 	private void refreshButtonClicked() {
-		logger.info("Manual Refresh Triggered from Home Page");
+		logger.info("Manual Refresh Triggered from Key Home Page");
 //        -------------------------------------
         GoogleTools.clearCache();
-        lastSyncLabel_Primary.setText("  Last Synced: --:--  ");
+        lastSyncLabel_KeyHome.setText("  Last Synced: --:--  ");
 	}
 	
 //	=====================================================================================
@@ -119,26 +99,13 @@ public class PrimaryController {
 //	Changes pane to assign pane
 	@FXML
 	private void switchToAssign() throws IOException {
-		JavaFXTools.loadScene(FxmlView.ASSIGN);
-	}
-
-//	Changes pane to ingest pane
-	@FXML
-	private void switchToIngest() throws IOException {
-		JavaFXTools.loadScene(FxmlView.INGEST);
+		JavaFXTools.loadScene(FxmlView.KEY_ASSIGN);
 	}
 
 //	Changes pane to return pane
 	@FXML
 	private void switchToReturn() throws IOException {
-		JavaFXTools.loadScene(FxmlView.RETURN);
-	}
-
-//	Changes pane to query pane
-	@FXML
-	private void switchToQuery() throws IOException {
-		JavaFXTools.loadScene(FxmlView.QUERY);
-
+		JavaFXTools.loadScene(FxmlView.KEY_RETURN);
 	}
 
 //	Executes user log out
@@ -149,10 +116,10 @@ public class PrimaryController {
 		JavaFXTools.loadScene(FxmlView.LOGIN);
 	}
 	
-//	Change pane to key pane
+//	Change pane to drive pane
 	@FXML
-	private void keyButtonClicked() throws IOException {
-		JavaFXTools.loadScene(FxmlView.KEY_HOME);
+	private void driveButtonClicked() throws IOException {
+		JavaFXTools.loadScene(FxmlView.HOME);
 
 	}
 

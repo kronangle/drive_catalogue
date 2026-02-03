@@ -370,57 +370,6 @@ public class DriveAssignController {
 //	===================================================================
 
 //	Submits the form
-//	@FXML
-//	private void assignButtonClicked() {
-//		App.showNotification("Processing...");
-//		logger.info("Processing data from assignButtonClicked");
-////		Add a short delay before switching the pane
-//		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-//		delay.setOnFinished(event -> {
-//			try {
-//				String[] info = gatherInfoFromFields();
-//
-//				if (info != null) {
-////					Get results from verifying the info package
-//					Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
-//
-////					Execute form submission if no false values
-//					if (!verifyResults.values().contains(false)) {
-//						GoogleTools.pushChangesToSheet(info);
-//						logger.info("COMPLETED PROCESSING INFO");
-//						resetForm();
-//						JavaFXTools.loadScene(FxmlView.HOME);
-//					} else {
-////						The final error message to show
-//						StringBuilder notification = new StringBuilder();
-////	 					Check fields that were verified, if false Highlight and return error message
-//						JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveAssign, notification);
-//						JavaFXTools.verifyField(verifyResults, CREW_NAME_KEY, crewComboBox_DriveAssign, notification);
-//						JavaFXTools.verifyField(verifyResults, DETAILS_KEY, getActiveTextField(), notification);
-////						Show and log error if it exists
-//						if (!notification.isEmpty()) {
-//							logger.warn(String.format(("Invalid input detected:\n" + notification)));
-//							App.showNotification("Invalid input detected:\n" + notification.toString());
-//						}
-//					}
-//
-//				} else {
-//					logger.warn("info is null");
-//					App.showNotification("There is no info to push to spreadsheet");
-//				}
-//			} catch (IOException e) {
-//				logger.warn("Failed to push changes to the spreadsheet");
-//				logger.error("IOException - ", e);
-//				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
-//			} catch (GeneralSecurityException e) {
-//				logger.warn("Failed to push changes to the spreadsheet");
-//				logger.error("GeneralSecurityException - ", e);
-//				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
-//			}
-//		});
-//		delay.play();
-//	}
-	
 	@FXML
 	private void assignButtonClicked() {
 		logger.info("Processing data from assignButtonClicked");
@@ -479,11 +428,6 @@ public class DriveAssignController {
 	private void cancelButtonClicked() {
 		resetForm();
 		JavaFXTools.loadScene(FxmlView.HOME);
-//		try {
-//			JavaFXTools.switchToHome();
-//		} catch (IOException e) {
-//			JavaFXTools.logIOExceptionFromHomePage("cancelButtonClicked",e);
-//		}
 	}
 
 //	Toggles which textField is active

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="paneKeyHome" alignment="CENTER" prefHeight="248.0" prefWidth="298.0" spacing="20.0" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.clearanglestudios.drive_catalogue.KeyHomeController">
+   <children>
+      <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../Images/clear_angle_logo_icon_grey.png" />
+         </image>
+      </ImageView>
+      <Button fx:id="assignButton_KeyHome" mnemonicParsing="false" onAction="#switchToAssign" prefWidth="63.0" styleClass="custom-button" text="ASSIGN" />
+      <Button fx:id="returnButton_KeyHome" mnemonicParsing="false" onAction="#switchToReturn" prefWidth="63.0" styleClass="custom-button" text="RETURN" />
+      <Button fx:id="logoutButton_KeyHome" mnemonicParsing="false" onAction="#logoutButtonClicked" styleClass="custom-button" text="LOGOUT" />
+      <Label fx:id="loggedInLabel_KeyHome" styleClass="custom-label" text="Logged in as: " textFill="WHITE" />
+      <Label fx:id="lastSyncLabel_KeyHome" alignment="CENTER" focusTraversable="false" styleClass="custom-label" text="  Last Synced:   --:--" textAlignment="CENTER" />
+      <Button fx:id="refreshButton_KeyHome" mnemonicParsing="false" onAction="#refreshButtonClicked" styleClass="custom-button">
+         <graphic>
+            <ImageView fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../Images/pngtree-white-refresh-icon-image_1338657.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
+      <Button fx:id="driveButton_KeyHome" mnemonicParsing="false" onAction="#driveButtonClicked" prefWidth="63.0" styleClass="custom-button" text="DRIVES" />
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+   <styleClass>
+      <String fx:value="custom-pane" />
+      <String fx:value="custom-stack" />
+   </styleClass>
+</VBox>

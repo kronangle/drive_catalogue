@@ -8,7 +8,10 @@ public enum FxmlView {
     RETURN("DriveReturn"),
     QUERY("DriveQuery"),
     SPLASH("SplashScreen"),
-    LOGIN("LoginPage");
+    LOGIN("LoginPage"), 
+    KEY_ASSIGN("KeyAssign"),
+	KEY_RETURN("KeyReturn"),
+	KEY_HOME("KeyHome");
 
     private final String fxmlFileName;
 

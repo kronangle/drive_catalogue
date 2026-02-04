@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.controlsfx.control.NotificationPane;
 
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXMLLoader;
@@ -20,10 +19,6 @@ public class JavaFXTools {
 	// =====================================================================================
 
 	private static final Logger logger = LogManager.getLogger(JavaFXTools.class);
-
-	// STANDARD UI DIMENSIONS (The "Fix" for inconsistent windows)
-	private static final int WINDOW_WIDTH = 900;
-	private static final int WINDOW_HEIGHT = 650;
 
 	// Map Keys
 	private static final String DRIVE_NAME_KEY = "DriveName";
@@ -73,13 +68,8 @@ public class JavaFXTools {
 		newRoot.getStylesheets().add(cssPath);
 
 		App.getNotificationPane().setContent(newRoot);
-		
-//		App.getStage().setWidth(WINDOW_WIDTH);
-//		App.getStage().setHeight(WINDOW_HEIGHT);
-		
 		App.hideNotification();
 	}
-
 
 //  Used to load the FXML file for new scene
 	private static Parent loadFXML(String fxml) throws IOException {
@@ -87,10 +77,6 @@ public class JavaFXTools {
 		return fxmlLoader.load();
 	}
 
-	
-	
-	
-	
 	// =====================================================================================
 	//
 	// VERIFICATION METHODS

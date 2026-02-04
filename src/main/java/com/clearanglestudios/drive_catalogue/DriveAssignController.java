@@ -5,28 +5,26 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.clearanglestudios.googleService.GoogleTools;
+import com.clearanglestudios.googleService.IDataService;
 import com.clearanglestudios.objects.Crew;
 import com.clearanglestudios.objects.Drive;
 import com.clearanglestudios.objects.SheetUpdate;
 
-import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
-import javafx.util.Duration;
 
 public class DriveAssignController {
 
@@ -69,13 +67,18 @@ public class DriveAssignController {
 //	----------------------------------------------------------------
 
 //	Google spreadsheet data objects
-	private ArrayList<Drive> drives = new ArrayList<>();
-	private ArrayList<Crew> crewList = new ArrayList<>();
+	private List<Drive> drives = new ArrayList<>();
+	private List<Crew> crewList = new ArrayList<>();
 
 //	----------------------------------------------------------------
 
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(DriveAssignController.class);
+	
+//	-------------------------------------------------------------------------------------
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
 
 //	----------------------------------------------------------------
 
@@ -113,34 +116,34 @@ public class DriveAssignController {
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveAssign.setText(loggedInLabelSpacing + loggedInLabelText
-				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
+				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Try get Drive data from the spreadsheet
 		try {
-			drives = GoogleTools.getDriveData();
+			drives = dataService.getDriveData();
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Drive", e);
+			dataService.logGeneralSecurityException("Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Drive", e);
+			dataService.logIOException("Drive", e);
 		}
 //		-------------------------------------------------
 //		Try get Crew data from the spreadsheet
 		try {
-			crewList = GoogleTools.getCrewData();
+			crewList = dataService.getCrewData();
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Crew", e);
+			dataService.logGeneralSecurityException("Crew", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Crew", e);
+			dataService.logIOException("Crew", e);
 		}
 //		-------------------------------------------------
 //		Get and Set options in choice boxes
 		try {
-			obserableDriveList.addAll(GoogleTools.getFilteredDriveNames("in"));
+			obserableDriveList.addAll(dataService.getFilteredDriveNames("in"));
 			driveComboBox_DriveAssign.getItems().addAll(obserableDriveList);
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Filtered Drive", e);
+			dataService.logGeneralSecurityException("Filtered Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Filtered Drive", e);
+			dataService.logIOException("Filtered Drive", e);
 		}
 //		-------------------------------------------------
 //		Setup form
@@ -275,12 +278,12 @@ public class DriveAssignController {
 		obserableDriveList.clear();
 		try {
 			obserableDriveList
-					.addAll(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND, sizeChoiceBox_DriveAssign.getValue()));
+					.addAll(dataService.getFilteredDriveNames(STATUS_TO_FIND, sizeChoiceBox_DriveAssign.getValue()));
 			driveComboBox_DriveAssign.getItems().addAll(obserableDriveList);
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Size - Filtered Drive", e);
+			dataService.logGeneralSecurityException("Size - Filtered Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Size - Filtered Drive", e);
+			dataService.logIOException("Size - Filtered Drive", e);
 		} finally {
 			isUpdatingDrives = false;
 		}
@@ -384,7 +387,7 @@ public class DriveAssignController {
 
 		try {
 			// VERIFY DATA 
-			Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
+			Map<String, Boolean> verifyResults = dataService.verifyInfo(info);
 
 			// CHECK FOR ERRORS
 			if (verifyResults.values().contains(false)) {
@@ -404,7 +407,7 @@ public class DriveAssignController {
 
 			// Create ticket and send to background thread 
 			SheetUpdate ticket = new SheetUpdate(info);
-			GoogleTools.queueSheetUpdate(ticket);
+			dataService.queueSheetUpdate(ticket);
 
 			logger.info("Assignment task queued successfully. Form reset for next entry.");
 

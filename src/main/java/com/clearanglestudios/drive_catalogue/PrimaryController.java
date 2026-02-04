@@ -2,23 +2,16 @@ package com.clearanglestudios.drive_catalogue;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-
-import javax.mail.MessagingException;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.controlsfx.control.NotificationPane;
 
-import com.clearanglestudios.googleService.GoogleTools;
-import com.google.api.services.people.v1.PeopleService;
-import com.google.api.services.people.v1.model.Person;
+import com.clearanglestudios.googleService.IDataService;
 
-import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.util.Duration;
 
 public class PrimaryController {
 
@@ -56,6 +49,11 @@ public class PrimaryController {
 //	Logged in user label
 	private static final String loggedInLabelText = "Logged in as: ";
 	private static final String loggedInLabelSpacing = "  ";
+	
+//	-------------------------------------------------------------------------------------
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
 
 //	=====================================================================================
 //	
@@ -71,30 +69,63 @@ public class PrimaryController {
 //		-------------------------------------------------------------------------------------
 //		Set the label to the current user's name
 		loggedInLabel_primary.setText(loggedInLabelSpacing + loggedInLabelText
-				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
+				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------------------------------------------
-//		Hide ingest button if user is not a part of the IT department
+//		Disable ingest button if user is not a part of the IT department
 		checkPermsForIngestButton();
+//		Disable key button if user is not a part of the Loggers group	
+		checkPermsForKeyButton();
 //		-------------------------------------------------------------------------------------
-		lastSyncLabel_Primary.setText("  Last Synced: " + GoogleTools.getLastSyncTime() + "  ");
+		lastSyncLabel_Primary.setText("  Last Synced: " + dataService.getLastSyncTime() + "  ");
 		logger.info("COMPLETED Initialising PrimaryController");
 	}
 
 //	Disable ingest button if user is not a part of the IT department
 	private void checkPermsForIngestButton() {
-		String currentUserEmail = GoogleTools.getCurrentUserEmail();
+		String currentUserEmail = dataService.getCurrentUserEmail();
 //		Compare email address against the lookup table from the spreadsheet
 		try {
-			ArrayList<String> itEmailAddresses = GoogleTools.getITEmailAddresses();
+			List<String> itEmailAddresses = dataService.getITEmailAddresses();
 			if (!itEmailAddresses.contains(currentUserEmail)) {
 				ingestButton_Primary.setDisable(true);
 			}
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("IT", e);
+			dataService.logGeneralSecurityException("IT", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("IT", e);
+			dataService.logIOException("IT", e);
 		}
 	}
+	
+	// Disable Key button if user is not in the allowed loggers list
+    private void checkPermsForKeyButton() {
+        String currentUserName = dataService.getCurrentUserName(); 
+        
+        try {
+            List<String> allowedLoggers = dataService.getKeyLoggers();
+            
+            boolean isAllowed = false;
+            for (String loggerName : allowedLoggers) {
+                if (loggerName.equalsIgnoreCase(currentUserName)) {
+                    isAllowed = true;
+                    break;
+                }
+            }
+
+            if (!isAllowed) {
+                if (keyButton_Primary != null) {
+                	keyButton_Primary.setDisable(true);
+                    logger.info("User '" + currentUserName + "' is not authorized for Key Management. Button disabled.");
+                }
+            } else {
+                logger.info("User '" + currentUserName + "' is authorized for Key Management.");
+            }
+            
+        } catch (GeneralSecurityException e) {
+        	dataService.logGeneralSecurityException("Key Loggers", e);
+        } catch (IOException e) {
+        	dataService.logIOException("Key Loggers", e);
+        }
+    }
 
 //	=====================================================================================
 //	
@@ -106,7 +137,7 @@ public class PrimaryController {
 	private void refreshButtonClicked() {
 		logger.info("Manual Refresh Triggered from Home Page");
 //        -------------------------------------
-        GoogleTools.clearCache();
+        dataService.clearCache();
         lastSyncLabel_Primary.setText("  Last Synced: --:--  ");
 	}
 	
@@ -144,8 +175,8 @@ public class PrimaryController {
 //	Executes user log out
 	@FXML
 	private void logoutButtonClicked() {
-		GoogleTools.logUserOut();
-		GoogleTools.clearCurrentUser();
+		dataService.logUserOut();
+		dataService.clearCurrentUser();
 		JavaFXTools.loadScene(FxmlView.LOGIN);
 	}
 	

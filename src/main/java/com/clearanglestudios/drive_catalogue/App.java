@@ -15,7 +15,10 @@ import java.security.GeneralSecurityException;
 
 import org.controlsfx.control.NotificationPane;
 
+import com.clearanglestudios.googleService.GoogleSheetAdapter;
 import com.clearanglestudios.googleService.GoogleTools;
+import com.clearanglestudios.googleService.IDataService;
+import com.clearanglestudios.mysqlService.MySQLAdapter;
 import com.google.api.services.people.v1.PeopleService;
 
 import org.apache.logging.log4j.LogManager;
@@ -49,71 +52,23 @@ public class App extends Application {
 
 //	For tests
 	public static boolean isTestEnvironment = false;
+	
+//	Data Management
+	private static IDataService dataService;
 
 //	===================================================================
-//	
 //						START UP
-//	
 //	===================================================================
+	
+	static {
+//      dataService = new GoogleSheetAdapter();
+        dataService = new MySQLAdapter();
+    }
 
 //	Launch the app
 	public static void main(String[] args) {
 		launch();
 	}
-
-//  Starting point for Application
-//	@Override
-//	public void start(Stage stage) throws IOException {
-//
-//		if (!isTestEnvironment) {
-//
-//			isStartingUp = true;
-//			logger.info(WINDOW_TITLE + " started");
-//			App.stage = stage;
-//
-////		Initialize the NotificationPane with the first FXML
-//			Parent initialRoot = loadFXML(FxmlView.LOGIN.getFxmlName());
-//			notificationPane = new NotificationPane(initialRoot);
-//			notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
-//
-////		Check if a user token is valid
-////		findUser();
-//
-////      Create the scene with the NotificationPane as the root
-//			scene = new Scene(notificationPane, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_LENGTH);
-//			stage.setScene(scene);
-//			stage.setResizable(true);
-//
-////		Set the icon and title
-//			stage.getIcons().add(new Image(getClass().getResourceAsStream(PRIMARY_ICON_FOR_APP)));
-//			stage.setTitle(WINDOW_TITLE);
-//
-////		Display stage and bring it to the front
-//			stage.show();
-//			bringStageToFront();
-//
-//			isStartingUp = false;
-//		} else {
-//
-//			isStartingUp = true;
-//			logger.info(WINDOW_TITLE + " started");
-//			App.stage = stage;
-//
-////			Initialize the first FXML
-//			Parent initialRoot = loadFXML(FxmlView.LOGIN.getFxmlName());
-//			scene = new Scene(initialRoot);
-//			stage.setScene(scene);
-//			stage.setResizable(false);
-////			Set the icon and title
-//			stage.getIcons().add(new Image(getClass().getResourceAsStream(PRIMARY_ICON_FOR_APP)));
-//			stage.setTitle(WINDOW_TITLE);
-//
-////			Display stage and bring it to the front
-//			stage.show();
-//			bringStageToFront();
-//
-//		}
-//	}
 
 //  Starting point for Application
     @Override
@@ -195,25 +150,6 @@ public class App extends Application {
 //	
 //	===================================================================
 
-////	Check if a valid token is present and try to set the logged in user
-//	private void findUser() {
-//		// Get the user's name
-//		PeopleService peopleService;
-//		try {
-//			peopleService = GoogleTools.getPeopleService();
-//			GoogleTools.setCurrentUser(
-//					peopleService.people().get("people/me").setPersonFields("names,emailAddresses").execute());
-//
-//		} catch (GeneralSecurityException e) {
-//			logger.warn("Failed to get Person data");
-//			logger.error("GeneralSecurityException ", e);
-//
-//		} catch (IOException e) {
-//			logger.warn("Failed to get Person data");
-//			logger.error("IOException ", e);
-//		}
-//	}
-
 //	Indicates if Application is starting up
 	public static boolean isStartingUp() {
 		return isStartingUp;
@@ -286,4 +222,7 @@ public class App extends Application {
 		return notificationPane;
 	}
 
+    public static IDataService getDataService() {
+        return dataService;
+    }
 }

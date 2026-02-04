@@ -9,16 +9,14 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.clearanglestudios.googleService.GoogleTools;
+import com.clearanglestudios.googleService.IDataService;
 import com.clearanglestudios.objects.SheetUpdate;
 
-import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.util.Duration;
 
 public class DriveReturnController {
 
@@ -44,6 +42,11 @@ public class DriveReturnController {
 	
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(DriveReturnController.class);
+	
+//	-------------------------------------------------------------------------------------
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
 
 //	-------------------------------------------------------------------------------------
 	
@@ -79,14 +82,14 @@ public class DriveReturnController {
 			obserableDriveList.addAll(getDriveList());
 			driveComboBox_DriveReturn.getItems().addAll(obserableDriveList);
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Drive", e);
+			dataService.logGeneralSecurityException("Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Drive", e);
+			dataService.logIOException("Drive", e);
 		}
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveRetrun.setText(loggedInLabelSpacing + loggedInLabelText
-				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
+				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Add a listener to filter items based on input to combo box
 		driveComboBox_DriveReturn.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
@@ -98,8 +101,8 @@ public class DriveReturnController {
 
 //	Returns list of options for combo box
 	private ArrayList<String> getDriveList() throws GeneralSecurityException, IOException {
-		ArrayList<String> tempDriveList = new ArrayList<>(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND_01));
-		tempDriveList.addAll(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND_02));
+		ArrayList<String> tempDriveList = new ArrayList<>(dataService.getFilteredDriveNames(STATUS_TO_FIND_01));
+		tempDriveList.addAll(dataService.getFilteredDriveNames(STATUS_TO_FIND_02));
 		Collections.sort(tempDriveList);
 		return tempDriveList;
 	}
@@ -217,7 +220,7 @@ public class DriveReturnController {
         }
 
         try {
-            Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
+            Map<String, Boolean> verifyResults = dataService.verifyInfo(info);
 
             if (verifyResults.values().contains(false)) {
                 StringBuilder notification = new StringBuilder();
@@ -233,7 +236,7 @@ public class DriveReturnController {
 
             
             SheetUpdate updateTask = new SheetUpdate(info);
-            GoogleTools.queueSheetUpdate(updateTask); 
+            dataService.queueSheetUpdate(updateTask); 
             
             logger.info("Update queued successfully. Navigating home.");
             App.showNotification("Saving in background...");

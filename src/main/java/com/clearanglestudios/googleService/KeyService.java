@@ -25,6 +25,7 @@ public class KeyService {
 	private static final String SHEET_NAME = "Sign_out_sheet";
 	private static final String DATA_RANGE = "Sign_out_sheet!A2:H";
 	private static final String HISTORY_SHEET_NAME = "History";
+	private static final String KEY_LOGGERS_RANGE = "Data Reference!J2:J";
 
 	/**
 	 * Fetches all keys from the spreadsheet.
@@ -181,5 +182,38 @@ public class KeyService {
                 .update(SPREADSHEET_ID, range, body)
                 .setValueInputOption("RAW")
                 .execute();
+    }
+
+    /**
+     * Fetches the list of authorized Key Loggers (Names) from the Key Spreadsheet.
+     */
+    public static List<String> getKeyLoggers() throws IOException, GeneralSecurityException {
+        List<String> authorizedNames = new ArrayList<>();
+        
+        Sheets service = GoogleTools.getSheetsService();
+        
+        ValueRange response = service.spreadsheets().values()
+                .get(SPREADSHEET_ID, KEY_LOGGERS_RANGE)
+                .execute();
+        
+        List<List<Object>> values = response.getValues();
+
+        if (values == null || values.isEmpty()) {
+            logger.warn("No Key Loggers found in Data Reference.");
+            return authorizedNames;
+        }
+
+        for (List<Object> row : values) {
+            // Check if row has data
+            if (row != null && !row.isEmpty()) {
+                Object cellValue = row.get(0);
+                if (cellValue != null) {
+                    // Add the name (Trimmed)
+                    authorizedNames.add(cellValue.toString().trim());
+                }
+            }
+        }
+        
+        return authorizedNames;
     }
 }

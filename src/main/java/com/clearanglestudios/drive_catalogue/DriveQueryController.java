@@ -5,12 +5,13 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.clearanglestudios.googleService.GoogleTools;
+import com.clearanglestudios.googleService.IDataService;
 import com.clearanglestudios.objects.Crew;
 import com.clearanglestudios.objects.CrewDrive;
 import com.clearanglestudios.objects.Drive;
@@ -90,13 +91,18 @@ public class DriveQueryController {
 //	-------------------------------------------------------------------------------------
 
 //	Google spreadsheet data objects
-	private ArrayList<Drive> drives = new ArrayList<>();
-	private ArrayList<Crew> crewList = new ArrayList<>();
+	private List<Drive> drives = new ArrayList<>();
+	private List<Crew> crewList = new ArrayList<>();
 
 //	-------------------------------------------------------------------------------------
 
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(DriveQueryController.class);
+	
+//	-------------------------------------------------------------------------------------
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
 
 //	-------------------------------------------------------------------------------------
 
@@ -132,24 +138,24 @@ public class DriveQueryController {
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveQuery.setText(loggedInLabelSpacing + loggedInLabelText
-				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
+				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Try get Drive data from the spreadsheet
 		try {
-			drives = GoogleTools.getDriveData();
+			drives = dataService.getDriveData();
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Drive", e);
+			dataService.logGeneralSecurityException("Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Drive", e);
+			dataService.logIOException("Drive", e);
 		}
 //		-------------------------------------------------
 //		Try get Crew data from the spreadsheet
 		try {
-			crewList = GoogleTools.getCrewData();
+			crewList = dataService.getCrewData();
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Crew", e);
+			dataService.logGeneralSecurityException("Crew", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Crew", e);
+			dataService.logIOException("Crew", e);
 		}
 //		-------------------------------------------------
 //		Set options in choice boxes
@@ -157,9 +163,9 @@ public class DriveQueryController {
 			obserableDriveList.addAll(getDriveList());
 			driveNameComboBox_DriveQuery.getItems().addAll(obserableDriveList);
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Filtered Drive", e);
+			dataService.logGeneralSecurityException("Filtered Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Filtered Drive", e);
+			dataService.logIOException("Filtered Drive", e);
 		}
 //		-------------------------------------------------
 //		Setup query controls
@@ -228,9 +234,9 @@ public class DriveQueryController {
 
 //	Returns all the options for the combo box
 	private ArrayList<String> getDriveList() throws GeneralSecurityException, IOException {
-		ArrayList<String> tempDriveList = new ArrayList<>(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND_01));
-		tempDriveList.addAll(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND_02));
-		tempDriveList.addAll(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND_03));
+		ArrayList<String> tempDriveList = new ArrayList<>(dataService.getFilteredDriveNames(STATUS_TO_FIND_01));
+		tempDriveList.addAll(dataService.getFilteredDriveNames(STATUS_TO_FIND_02));
+		tempDriveList.addAll(dataService.getFilteredDriveNames(STATUS_TO_FIND_03));
 		Collections.sort(tempDriveList);
 		return tempDriveList;
 	}
@@ -349,15 +355,15 @@ public class DriveQueryController {
 	}
 
 //	Returns a fresh list of drives
-	private ArrayList<Drive> refreshDriveData() {
+	private List<Drive> refreshDriveData() {
 		try {
-			ArrayList<Drive> freshDrives = new ArrayList<>();
-			freshDrives = GoogleTools.getDriveData();
+			List<Drive> freshDrives = new ArrayList<>();
+			freshDrives = dataService.getDriveData();
 			return freshDrives;
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Drive", e);
+			dataService.logGeneralSecurityException("Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Drive", e);
+			dataService.logIOException("Drive", e);
 		}
 		return null;
 	}
@@ -440,13 +446,13 @@ public class DriveQueryController {
 		driveNameComboBox_DriveQuery.getItems().clear();
 		obserableDriveList.clear();
 		try {
-			obserableDriveList.addAll(GoogleTools.getFilteredDriveNames(statusChoiceBox_DriveQuery.getValue(),
+			obserableDriveList.addAll(dataService.getFilteredDriveNames(statusChoiceBox_DriveQuery.getValue(),
 					sizeChoiceBox_DriveQuery.getValue()));
 			driveNameComboBox_DriveQuery.getItems().addAll(obserableDriveList);
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Filtered Drive", e);
+			dataService.logGeneralSecurityException("Filtered Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Filtered Drive", e);
+			dataService.logIOException("Filtered Drive", e);
 		} finally {
 			isUpdatingDrives = false;
 		}
@@ -481,7 +487,7 @@ public class DriveQueryController {
 //				Get name to search for
 				String driveName = driveNameComboBox_DriveQuery.getValue();
 //				Get result from verifying the name
-				boolean foundDriveName = GoogleTools.doesDriveNameExist(driveName);
+				boolean foundDriveName = dataService.doesDriveNameExist(driveName);
 
 				if (foundDriveName) {
 					searchAndDisplayDrive(driveName);
@@ -495,9 +501,9 @@ public class DriveQueryController {
 					App.showNotification("Invalid input detected:\n" + DRIVE_SEARCH_ERROR_MESSAGE);
 				}
 			} catch (IOException e) {
-				GoogleTools.logIOException("searchDrivesButtonClicked", e);
+				dataService.logIOException("searchDrivesButtonClicked", e);
 			} catch (GeneralSecurityException e) {
-				GoogleTools.logGeneralSecurityException("searchDrivesButtonClicked", e);
+				dataService.logGeneralSecurityException("searchDrivesButtonClicked", e);
 			}
 		});
 		delay.play();
@@ -516,7 +522,7 @@ public class DriveQueryController {
 //				Get name to search for
 				String crewName = crewNameComboBox_DriveQuery.getValue();
 //				Get result from verifying the name
-				boolean foundCrewName = GoogleTools.doesCrewNameExist(crewName);
+				boolean foundCrewName = dataService.doesCrewNameExist(crewName);
 //				Execute form submission if no false value
 				if (foundCrewName) {
 					searchAndDisplayCrewDrives(crewName);
@@ -530,9 +536,9 @@ public class DriveQueryController {
 					App.showNotification("Invalid input detected:\n" + CREW_SEARCH_ERROR_MESSAGE);
 				}
 			} catch (IOException e) {
-				GoogleTools.logIOException("searchCrewButtonClicked", e);
+				dataService.logIOException("searchCrewButtonClicked", e);
 			} catch (GeneralSecurityException e) {
-				GoogleTools.logGeneralSecurityException("searchCrewButtonClicked", e);
+				dataService.logGeneralSecurityException("searchCrewButtonClicked", e);
 			}
 		});
 		delay.play();

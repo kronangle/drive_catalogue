@@ -132,7 +132,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.clearanglestudios.googleService.GoogleTools;
+import com.clearanglestudios.googleService.IDataService;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -147,6 +147,9 @@ public class LoginPageController {
 
 	// Initialize Logger
 	private static final Logger logger = LogManager.getLogger(LoginPageController.class);
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
 
 //	=====================================================================================
 //	
@@ -188,7 +191,7 @@ public class LoginPageController {
 				// 2. Perform the Login & Fetch Data
 				// This call handles the OAuth flow. If no token exists, it opens the browser.
 				// Once authenticated, it fetches the name/email and stores it in GoogleTools.
-				GoogleTools.fetchUserInfo();
+				dataService.fetchUserInfo();
 
 				// 3. Success -> Switch Scene (Must run on UI Thread)
 				Platform.runLater(() -> {

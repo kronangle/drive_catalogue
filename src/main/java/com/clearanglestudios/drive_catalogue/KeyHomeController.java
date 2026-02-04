@@ -1,24 +1,16 @@
 package com.clearanglestudios.drive_catalogue;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 
-import javax.mail.MessagingException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.controlsfx.control.NotificationPane;
 
-import com.clearanglestudios.googleService.GoogleTools;
-import com.google.api.services.people.v1.PeopleService;
-import com.google.api.services.people.v1.model.Person;
+import com.clearanglestudios.googleService.IDataService;
 
-import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.util.Duration;
 
 public class KeyHomeController {
 
@@ -48,6 +40,11 @@ public class KeyHomeController {
 
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(KeyHomeController.class);
+	
+//	-------------------------------------------------------------------------------------
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
 
 //	-------------------------------------------------------------------------------------
 
@@ -69,9 +66,9 @@ public class KeyHomeController {
 //		-------------------------------------------------------------------------------------
 //		Set the label to the current user's name
 		loggedInLabel_KeyHome.setText(loggedInLabelSpacing + loggedInLabelText
-				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
+				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------------------------------------------
-		lastSyncLabel_KeyHome.setText("  Last Synced: " + GoogleTools.getLastSyncTime() + "  ");
+		lastSyncLabel_KeyHome.setText("  Last Synced: " + dataService.getLastSyncTime() + "  ");
 		logger.info("COMPLETED Initialising KeyHome");
 	}
 
@@ -86,7 +83,7 @@ public class KeyHomeController {
 	private void refreshButtonClicked() {
 		logger.info("Manual Refresh Triggered from Key Home Page");
 //        -------------------------------------
-        GoogleTools.clearCache();
+		dataService.clearCache();
         lastSyncLabel_KeyHome.setText("  Last Synced: --:--  ");
 	}
 	
@@ -111,8 +108,8 @@ public class KeyHomeController {
 //	Executes user log out
 	@FXML
 	private void logoutButtonClicked() {
-		GoogleTools.logUserOut();
-		GoogleTools.clearCurrentUser();
+		dataService.logUserOut();
+		dataService.clearCurrentUser();
 		JavaFXTools.loadScene(FxmlView.LOGIN);
 	}
 	

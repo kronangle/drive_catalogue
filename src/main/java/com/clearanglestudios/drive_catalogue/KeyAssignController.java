@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.clearanglestudios.googleService.GoogleTools;
+import com.clearanglestudios.googleService.IDataService;
 import com.clearanglestudios.googleService.KeyService;
 import com.clearanglestudios.objects.Crew;
 import com.clearanglestudios.objects.Key;
@@ -45,6 +45,11 @@ public class KeyAssignController {
     private boolean isUpdatingKeys = false;
     private boolean isUpdatingCrew = false;
 
+//	-------------------------------------------------------------------------------------
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
+    
     // ===================================================================
     //                      START UP
     // ===================================================================
@@ -52,13 +57,13 @@ public class KeyAssignController {
     @FXML
     public void initialize() {
         logger.info("Initializing KeyAssignController");
-        loggedInLabel_KeyAssign.setText("Logged in as: " + GoogleTools.getCurrentUserName());
+        loggedInLabel_KeyAssign.setText("Logged in as: " + dataService.getCurrentUserName());
 
         CompletableFuture.runAsync(() -> {
             try {
                 // Fetch Data
                 List<Key> allKeys = KeyService.getAllKeys();
-                List<Crew> crewObjects = GoogleTools.getCrewData();
+                List<Crew> crewObjects = dataService.getCrewData();
 
                 // Prepare Crew Names List
                 List<String> crewNames = new ArrayList<>();
@@ -236,8 +241,8 @@ public class KeyAssignController {
         
         selectedKey.setStatus("Out");
         selectedKey.setAssignedTo(selectedCrew);
-        selectedKey.setLoggedBy(GoogleTools.getCurrentUserName());
-        selectedKey.setDateOfLog(GoogleTools.getTodaysDate());
+        selectedKey.setLoggedBy(dataService.getCurrentUserName());
+        selectedKey.setDateOfLog(dataService.getTodaysDate());
         selectedKey.setNotes(notes);
 
         logger.info("Queuing Key Update: " + selectedKey.getItemName() + " -> " + selectedCrew);

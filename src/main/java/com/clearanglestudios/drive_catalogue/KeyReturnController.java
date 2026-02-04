@@ -7,8 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.clearanglestudios.googleService.GoogleTools;
-import com.clearanglestudios.googleService.KeyService;
+import com.clearanglestudios.googleService.IDataService;
 import com.clearanglestudios.objects.Key;
 
 import javafx.application.Platform;
@@ -33,6 +32,11 @@ public class KeyReturnController {
     private ObservableList<Key> observableKeyList = FXCollections.observableArrayList();
     private String oldKeyFilter = "";
     private boolean isUpdatingKeys = false;
+    
+//	-------------------------------------------------------------------------------------
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
 
     // ===================================================================
     //                      START UP
@@ -43,12 +47,12 @@ public class KeyReturnController {
         logger.info("Initializing KeyReturnController");
 
         // 1. Set User Label
-        loggedInLabel_KeyRetrun.setText("Logged in as: " + GoogleTools.getCurrentUserName());
+        loggedInLabel_KeyRetrun.setText("Logged in as: " + dataService.getCurrentUserName());
 
         // 2. Load Data (Async)
         CompletableFuture.runAsync(() -> {
             try {
-                List<Key> allKeys = KeyService.getAllKeys();
+                List<Key> allKeys = dataService.getAllKeys();
 
                 // OPTIONAL: Sort keys so "Out" keys are at the top for easier access
                 allKeys.sort(Comparator.comparing(Key::getStatus).reversed() // "Out" comes before "In"
@@ -154,7 +158,7 @@ public class KeyReturnController {
 
         // 2. Queue Return (Service handles Archiving + Clearing)
         logger.info("Queuing Return for: " + selectedKey.getItemName());
-        KeyService.queueKeyReturn(selectedKey);
+        dataService.queueKeyReturn(selectedKey);
 
         // 3. Reset
         resetForm();

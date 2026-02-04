@@ -7,17 +7,15 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.clearanglestudios.googleService.GoogleTools;
+import com.clearanglestudios.googleService.IDataService;
 import com.clearanglestudios.objects.SheetUpdate;
 
-import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.util.Duration;
 
 public class DriveIngestController {
 
@@ -47,6 +45,11 @@ public class DriveIngestController {
 
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(DriveIngestController.class);
+	
+//	-------------------------------------------------------------------------------------
+	
+//	Data Management
+	private final IDataService dataService = App.getDataService();
 
 //	-------------------------------------------------------------------------------------
 
@@ -78,26 +81,26 @@ public class DriveIngestController {
 //		-----------------------------------------------------
 //		Try get the drive data from the spreadsheet
 		try {
-			obserableDriveList.addAll(GoogleTools.getFilteredDriveNames(STATUS_TO_FIND));
+			obserableDriveList.addAll(dataService.getFilteredDriveNames(STATUS_TO_FIND));
 			driveComboBox_DriveIngest.getItems().addAll(obserableDriveList);
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Filtered Drive", e);
+			dataService.logGeneralSecurityException("Filtered Drive", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Filtered Drive", e);
+			dataService.logIOException("Filtered Drive", e);
 		}
 //		-----------------------------------------------------
 //		Try get the ingest PC names from the spreadsheet
 		try {
-			pcChoiceBox_DriveIngest.getItems().addAll(GoogleTools.getPcNames());
+			pcChoiceBox_DriveIngest.getItems().addAll(dataService.getPcNames());
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("PC", e);
+			dataService.logGeneralSecurityException("PC", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("PC", e);
+			dataService.logIOException("PC", e);
 		}
 //		-------------------------------------------------
 //		Set current user's name on label
 		loggedInLabel_DriveIngest.setText(loggedInLabelSpacing + loggedInLabelText
-				+ GoogleTools.getCurrentUserName() + loggedInLabelSpacing);
+				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Add a listener to filter items based on input
 		driveComboBox_DriveIngest.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
@@ -144,11 +147,11 @@ public class DriveIngestController {
 		String crew = "";
 
 		try {
-			crew = GoogleTools.getFilteredCrewName(drive);
+			crew = dataService.getFilteredCrewName(drive);
 		} catch (GeneralSecurityException e) {
-			GoogleTools.logGeneralSecurityException("Ingesting - Filtered Crew", e);
+			dataService.logGeneralSecurityException("Ingesting - Filtered Crew", e);
 		} catch (IOException e) {
-			GoogleTools.logIOException("Ingesting - Filtered Crew", e);
+			dataService.logIOException("Ingesting - Filtered Crew", e);
 		}
 
 		String[] info = { drive, status, crew, details };
@@ -168,58 +171,6 @@ public class DriveIngestController {
 //	
 //	=====================================================================================
 
-//	Submits the form
-//	@FXML
-//	private void ingestButtonClicked() {
-//		App.showNotification("Processing...");
-//		logger.info("Processing data from ingestButtonClicked");
-////		Add a short delay before switching the pane
-//		PauseTransition delay = new PauseTransition(Duration.seconds(1)); // 1-second delay
-//		delay.setOnFinished(event -> {
-//			try {
-//				String[] info = gatherInfoFromFields();
-//
-//				if (info != null) {
-////					Get results from verifying the info package
-//					Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
-//
-////					Execute form submission if no false values
-//					if (!verifyResults.values().contains(false)) {
-//						GoogleTools.pushChangesToSheet(info);
-//						logger.info("COMPLETED PROCESSING INFO");
-//						resetForm();
-//						JavaFXTools.loadScene(FxmlView.HOME);
-//					} else {
-////						The final error message to show
-//						StringBuilder notification = new StringBuilder();
-////	 					Check fields that were verified, if false Highlight and return error message
-//						JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveIngest, notification);
-//						JavaFXTools.verifyField(verifyResults, PC_NAME_KEY, pcChoiceBox_DriveIngest, notification);
-////						Show and log error if it exists
-//						if (!notification.isEmpty()) {
-//							logger.warn(String.format(("Invalid input detected:\n" + notification)));
-//							App.showNotification("Invalid input detected:\n" + notification.toString());
-//						}
-//					}
-//
-//				} else {
-//					logger.warn("info is null");
-//					App.showNotification("There is no info to push to spreadsheet");
-//				}
-//
-//			} catch (IOException e) {
-//				logger.warn("Failed to push changes to the spreadsheet");
-//				logger.error("IOException - ", e);
-//				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
-//			} catch (GeneralSecurityException e) {
-//				logger.warn("Failed to push changes to the spreadsheet");
-//				logger.error("GeneralSecurityException - ", e);
-//				App.showNotification("Failed to push changes to the spreadsheet - " + e.getMessage());
-//			}
-//		});
-//		delay.play();
-//	}
-	
 	@FXML
 	private void ingestButtonClicked() {
 		logger.info("Processing data from ingestButtonClicked");
@@ -234,7 +185,7 @@ public class DriveIngestController {
 
 		try {
 			// VERIFY DATA 
-			Map<String, Boolean> verifyResults = GoogleTools.verifyInfo(info);
+			Map<String, Boolean> verifyResults = dataService.verifyInfo(info);
 
 			// CHECK FOR ERRORS
 			if (verifyResults.values().contains(false)) {
@@ -254,7 +205,7 @@ public class DriveIngestController {
 
 			// Create ticket and send to background thread 
 			SheetUpdate queueTask = new SheetUpdate(info);
-			GoogleTools.queueSheetUpdate(queueTask);
+			dataService.queueSheetUpdate(queueTask);
 
 			logger.info("Ingest task queued successfully. Form reset for next entry.");
 

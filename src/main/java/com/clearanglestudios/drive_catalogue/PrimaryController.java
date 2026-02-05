@@ -38,6 +38,8 @@ public class PrimaryController {
 	private Button refreshButton_Primary;
 	@FXML
 	private Button keyButton_Primary;
+	@FXML
+	private Button adminButton_Primary;
 
 //	-------------------------------------------------------------------------------------
 
@@ -49,9 +51,9 @@ public class PrimaryController {
 //	Logged in user label
 	private static final String loggedInLabelText = "Logged in as: ";
 	private static final String loggedInLabelSpacing = "  ";
-	
+
 //	-------------------------------------------------------------------------------------
-	
+
 //	Data Management
 	private final IDataService dataService = App.getDataService();
 
@@ -68,11 +70,11 @@ public class PrimaryController {
 //		App.hideNotification();
 //		-------------------------------------------------------------------------------------
 //		Set the label to the current user's name
-		loggedInLabel_primary.setText(loggedInLabelSpacing + loggedInLabelText
-				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
+		loggedInLabel_primary.setText(
+				loggedInLabelSpacing + loggedInLabelText + dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------------------------------------------
 //		Disable ingest button if user is not a part of the IT department
-		checkPermsForIngestButton();
+		checkPermsForButtons();
 //		Disable key button if user is not a part of the Loggers group	
 		checkPermsForKeyButton();
 //		-------------------------------------------------------------------------------------
@@ -81,66 +83,74 @@ public class PrimaryController {
 	}
 
 //	Disable ingest button if user is not a part of the IT department
-	private void checkPermsForIngestButton() {
+	private void checkPermsForButtons() {
 		String currentUserEmail = dataService.getCurrentUserEmail();
-//		Compare email address against the lookup table from the spreadsheet
+
 		try {
-			List<String> itEmailAddresses = dataService.getITEmailAddresses();
-			if (!itEmailAddresses.contains(currentUserEmail)) {
-				ingestButton_Primary.setDisable(true);
+			boolean isUserAdmin = dataService.isAdmin(currentUserEmail);
+
+			ingestButton_Primary.setDisable(!isUserAdmin);
+
+			if (adminButton_Primary != null) {
+				adminButton_Primary.setVisible(isUserAdmin);
+				adminButton_Primary.setManaged(isUserAdmin);
 			}
+
 		} catch (GeneralSecurityException e) {
-			dataService.logGeneralSecurityException("IT", e);
+			dataService.logGeneralSecurityException("Security Check", e);
+			ingestButton_Primary.setDisable(true);
+			adminButton_Primary.setVisible(false);
 		} catch (IOException e) {
-			dataService.logIOException("IT", e);
+			dataService.logIOException("Security Check", e);
 		}
 	}
-	
-	// Disable Key button if user is not in the allowed loggers list
-    private void checkPermsForKeyButton() {
-        String currentUserName = dataService.getCurrentUserName(); 
-        
-        try {
-            List<String> allowedLoggers = dataService.getKeyLoggers();
-            
-            boolean isAllowed = false;
-            for (String loggerName : allowedLoggers) {
-                if (loggerName.equalsIgnoreCase(currentUserName)) {
-                    isAllowed = true;
-                    break;
-                }
-            }
 
-            if (!isAllowed) {
-                if (keyButton_Primary != null) {
-                	keyButton_Primary.setDisable(true);
-                    logger.info("User '" + currentUserName + "' is not authorized for Key Management. Button disabled.");
-                }
-            } else {
-                logger.info("User '" + currentUserName + "' is authorized for Key Management.");
-            }
-            
-        } catch (GeneralSecurityException e) {
-        	dataService.logGeneralSecurityException("Key Loggers", e);
-        } catch (IOException e) {
-        	dataService.logIOException("Key Loggers", e);
-        }
-    }
+	// Disable Key button if user is not in the allowed loggers list
+	private void checkPermsForKeyButton() {
+		String currentUserName = dataService.getCurrentUserName();
+
+		try {
+			List<String> allowedLoggers = dataService.getKeyLoggers();
+
+			boolean isAllowed = false;
+			for (String loggerName : allowedLoggers) {
+				if (loggerName.equalsIgnoreCase(currentUserName)) {
+					isAllowed = true;
+					break;
+				}
+			}
+
+			if (!isAllowed) {
+				if (keyButton_Primary != null) {
+					keyButton_Primary.setDisable(true);
+					logger.info(
+							"User '" + currentUserName + "' is not authorized for Key Management. Button disabled.");
+				}
+			} else {
+				logger.info("User '" + currentUserName + "' is authorized for Key Management.");
+			}
+
+		} catch (GeneralSecurityException e) {
+			dataService.logGeneralSecurityException("Key Loggers", e);
+		} catch (IOException e) {
+			dataService.logIOException("Key Loggers", e);
+		}
+	}
 
 //	=====================================================================================
 //	
 //									DATA MANAGEMENT
 //	
 //	=====================================================================================
-	
+
 	@FXML
 	private void refreshButtonClicked() {
 		logger.info("Manual Refresh Triggered from Home Page");
 //        -------------------------------------
-        dataService.clearCache();
-        lastSyncLabel_Primary.setText("  Last Synced: --:--  ");
+		dataService.clearCache();
+		lastSyncLabel_Primary.setText("  Last Synced: --:--  ");
 	}
-	
+
 //	=====================================================================================
 //	
 //									JAVAFX METHODS
@@ -179,12 +189,18 @@ public class PrimaryController {
 		dataService.clearCurrentUser();
 		JavaFXTools.loadScene(FxmlView.LOGIN);
 	}
-	
+
 //	Change pane to key pane
 	@FXML
 	private void keyButtonClicked() throws IOException {
 		JavaFXTools.loadScene(FxmlView.KEY_HOME);
 
+	}
+
+//	Opens the admin panel
+	@FXML
+	private void openAdminPanel() {
+		JavaFXTools.loadScene(FxmlView.ADMIN);
 	}
 
 }

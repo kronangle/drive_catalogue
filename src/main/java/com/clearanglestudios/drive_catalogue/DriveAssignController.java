@@ -2,6 +2,7 @@ package com.clearanglestudios.drive_catalogue;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
@@ -53,6 +55,8 @@ public class DriveAssignController {
 	private ComboBox<String> driveComboBox_DriveAssign; // Actual available drives
 	@FXML
 	private ComboBox<String> crewComboBox_DriveAssign; // Actual available crew
+	@FXML
+	private DatePicker datePicker_DriveAssign;
 
 //	----------------------------------------------------------------
 
@@ -74,9 +78,9 @@ public class DriveAssignController {
 
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(DriveAssignController.class);
-	
+
 //	-------------------------------------------------------------------------------------
-	
+
 //	Data Management
 	private final IDataService dataService = App.getDataService();
 
@@ -100,7 +104,6 @@ public class DriveAssignController {
 	private static final String loggedInLabelText = "Logged in as: ";
 	private static final String loggedInLabelSpacing = "  ";
 
-
 //	===================================================================
 //	
 //						START UP
@@ -115,8 +118,8 @@ public class DriveAssignController {
 //		App.hideNotification();
 //		-------------------------------------------------
 //		Set current user's name on label
-		loggedInLabel_DriveAssign.setText(loggedInLabelSpacing + loggedInLabelText
-				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
+		loggedInLabel_DriveAssign.setText(
+				loggedInLabelSpacing + loggedInLabelText + dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Try get Drive data from the spreadsheet
 		try {
@@ -150,8 +153,7 @@ public class DriveAssignController {
 		setupChoiceBoxes();
 		setupComboBoxes();
 //		-------------------------------------------------
-		
-		
+
 		logger.info("COMPLETED Initialising DriveIngestController");
 	}
 
@@ -263,10 +265,16 @@ public class DriveAssignController {
 		String details = (!productionTextField_DriveAssign.isDisabled()) ? productionTextField_DriveAssign.getText()
 				: otherTextField_DriveAssign.getText();
 		String status = STATUS_TO_APPLY;
-		String[] info = { drive, status, crew, details };
+		
+        String dateInput = "";
+        if (datePicker_DriveAssign.getValue() != null) {
+            dateInput = datePicker_DriveAssign.getValue()
+                        .format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        }
+		
+        String[] info = { drive, status, crew, details, dateInput };
 
 		return info;
-
 	}
 
 //	----------------------------------------------------------------
@@ -386,7 +394,7 @@ public class DriveAssignController {
 		}
 
 		try {
-			// VERIFY DATA 
+			// VERIFY DATA
 			Map<String, Boolean> verifyResults = dataService.verifyInfo(info);
 
 			// CHECK FOR ERRORS
@@ -405,13 +413,13 @@ public class DriveAssignController {
 				return; // Do not queue invalid data.
 			}
 
-			// Create ticket and send to background thread 
+			// Create ticket and send to background thread
 			SheetUpdate ticket = new SheetUpdate(info);
 			dataService.queueSheetUpdate(ticket);
 
 			logger.info("Assignment task queued successfully. Form reset for next entry.");
 
-			// Clear the form 
+			// Clear the form
 			resetForm();
 			App.showNotification("Assignment queued! Ready for next entry.");
 
@@ -446,6 +454,5 @@ public class DriveAssignController {
 			logger.info("Enabling Other textField");
 		}
 	}
-
 
 }

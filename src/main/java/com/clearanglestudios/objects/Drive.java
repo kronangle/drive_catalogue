@@ -12,9 +12,10 @@ public class Drive {
 	private String crew;
 	private String dateOfLastLogged;
 	private String loggedByUser;
+	private String dueDate;
 	
 	public Drive(String serialNumber, String name, String size, String status, String assignment,
-			String crew, String dateOfLastLogged, String loggedByUser, String driveTag, String casTag) {
+			String crew, String dateOfLastLogged, String loggedByUser, String driveTag, String casTag, String dueDate) {
 		this.serialNumber = serialNumber;
 		this.casTag = casTag;
 		this.driveTag = driveTag;
@@ -25,6 +26,7 @@ public class Drive {
 		this.crew = crew;
 		this.dateOfLastLogged = dateOfLastLogged;
 		this.loggedByUser = loggedByUser;
+		this.dueDate = dueDate;
 	}
 	
 //	============================================
@@ -33,6 +35,14 @@ public class Drive {
 //	
 //	============================================
 	
+	public String getDueDate() {
+		return dueDate;
+	}
+
+	public void setDueDate(String dueDate) {
+		this.dueDate = dueDate;
+	}
+
 	public String getSerialNumber() {
 		return serialNumber;
 	}

@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.clearanglestudios.googleService.IDataService;
+import com.clearanglestudios.objects.Drive;
 import com.clearanglestudios.objects.SheetUpdate;
 
 import javafx.collections.FXCollections;
@@ -33,23 +35,23 @@ public class DriveReturnController {
 	private ComboBox<String> driveComboBox_DriveReturn;
 
 //	-------------------------------------------------------------------------------------
-	
+
 //	ComboBox filtering tools
 	private ObservableList<String> obserableDriveList = FXCollections.observableArrayList();
 	private String oldFilter = "";
 
 //	-------------------------------------------------------------------------------------
-	
+
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(DriveReturnController.class);
-	
+
 //	-------------------------------------------------------------------------------------
-	
+
 //	Data Management
 	private final IDataService dataService = App.getDataService();
 
 //	-------------------------------------------------------------------------------------
-	
+
 //	Map Keys
 	private static final String DRIVE_NAME_KEY = "DriveName";
 
@@ -57,10 +59,10 @@ public class DriveReturnController {
 	private static final String STATUS_TO_FIND_01 = "out";
 	private static final String STATUS_TO_FIND_02 = "ingesting";
 	private static final String STATUS_TO_APPLY = "in";
-	
+
 //	Default details for returned drives
 	private static final String DETAILS_TO_USE = "Safe'd";
-	
+
 //	-------------------------------------------------------------------------------------
 
 //	Logged in user label
@@ -77,19 +79,20 @@ public class DriveReturnController {
 	@FXML
 	public void initialize() {
 		logger.info("Initialising DriveReturnController");
-//		App.hideNotification();
-		try {
-			obserableDriveList.addAll(getDriveList());
+		if (Settings.isShowAllReturn()) {
+			logger.info("Admin Mode: Fetching ALL drives for Return...");
+			obserableDriveList.addAll(getUnfilteredDriveList());
 			driveComboBox_DriveReturn.getItems().addAll(obserableDriveList);
-		} catch (GeneralSecurityException e) {
-			dataService.logGeneralSecurityException("Drive", e);
-		} catch (IOException e) {
-			dataService.logIOException("Drive", e);
+		} else {
+			logger.info("Standard Mode: Fetching 'Out' & 'Ingesting' drives only...");
+			obserableDriveList.addAll(getFilteredDriveList());
+			driveComboBox_DriveReturn.getItems().addAll(obserableDriveList);
 		}
+
 //		-------------------------------------------------
 //		Set current user's name on label
-		loggedInLabel_DriveRetrun.setText(loggedInLabelSpacing + loggedInLabelText
-				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
+		loggedInLabel_DriveRetrun.setText(
+				loggedInLabelSpacing + loggedInLabelText + dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Add a listener to filter items based on input to combo box
 		driveComboBox_DriveReturn.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
@@ -100,11 +103,40 @@ public class DriveReturnController {
 	}
 
 //	Returns list of options for combo box
-	private ArrayList<String> getDriveList() throws GeneralSecurityException, IOException {
-		ArrayList<String> tempDriveList = new ArrayList<>(dataService.getFilteredDriveNames(STATUS_TO_FIND_01));
-		tempDriveList.addAll(dataService.getFilteredDriveNames(STATUS_TO_FIND_02));
-		Collections.sort(tempDriveList);
+	private List<String> getFilteredDriveList() {
+
+		List<String> tempDriveList = new ArrayList<String>();
+		try {
+			tempDriveList = dataService.getFilteredDriveNames(STATUS_TO_FIND_01);
+			tempDriveList.addAll(dataService.getFilteredDriveNames(STATUS_TO_FIND_02));
+			Collections.sort(tempDriveList);
+			return tempDriveList;
+		} catch (GeneralSecurityException | IOException e) {
+			logger.error("Failed to load drive data", e);
+			App.showNotification("Error loading drives.");
+		}
+
 		return tempDriveList;
+	}
+
+//	Returns all the drives names as a list of strings
+	private List<String> getUnfilteredDriveList() {
+		List<Drive> allDrives = new ArrayList<Drive>();
+		List<String> driveNames = new ArrayList<String>();
+
+		try {
+			allDrives = dataService.getDriveData();
+			for (Drive d : allDrives) {
+				driveNames.add(d.getName());
+			}
+		} catch (Exception e) {
+			logger.error("Failed to load drive data", e);
+			App.showNotification("Error loading drives.");
+		}
+
+		Collections.sort(driveNames);
+
+		return driveNames;
 	}
 
 //	=====================================================================================
@@ -208,51 +240,50 @@ public class DriveReturnController {
 //	}
 
 	@FXML
-    private void returnButtonClicked() {
-        logger.info("Processing data from returnButtonClicked");
+	private void returnButtonClicked() {
+		logger.info("Processing data from returnButtonClicked");
 
-        String[] info = gatherInfoFromFields();
+		String[] info = gatherInfoFromFields();
 
-        if (info == null) {
-            logger.warn("info is null");
-            App.showNotification("There is no info to save");
-            return;
-        }
+		if (info == null) {
+			logger.warn("info is null");
+			App.showNotification("There is no info to save");
+			return;
+		}
 
-        try {
-            Map<String, Boolean> verifyResults = dataService.verifyInfo(info);
+		try {
+			Map<String, Boolean> verifyResults = dataService.verifyInfo(info);
 
-            if (verifyResults.values().contains(false)) {
-                StringBuilder notification = new StringBuilder();
-                // Highlight the UI fields
-                JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveReturn, notification);
+			if (verifyResults.values().contains(false)) {
+				StringBuilder notification = new StringBuilder();
+				// Highlight the UI fields
+				JavaFXTools.verifyField(verifyResults, DRIVE_NAME_KEY, driveComboBox_DriveReturn, notification);
 
-                if (!notification.isEmpty()) {
-                    logger.warn("Invalid input detected:\n" + notification);
-                    App.showNotification("Invalid input detected:\n" + notification.toString());
-                }
-                return; // Don't queue invalid data
-            }
+				if (!notification.isEmpty()) {
+					logger.warn("Invalid input detected:\n" + notification);
+					App.showNotification("Invalid input detected:\n" + notification.toString());
+				}
+				return; // Don't queue invalid data
+			}
 
-            
-            SheetUpdate updateTask = new SheetUpdate(info);
-            dataService.queueSheetUpdate(updateTask); 
-            
-            logger.info("Update queued successfully. Navigating home.");
-            App.showNotification("Saving in background...");
+			SheetUpdate updateTask = new SheetUpdate(info);
+			dataService.queueSheetUpdate(updateTask);
 
-            resetForm();
-            //JavaFXTools.loadScene(FxmlView.HOME);
-            App.showNotification("Drive queued! Ready for next entry.");
-            logger.info("Task queued. Form reset for next entry.");
+			logger.info("Update queued successfully. Navigating home.");
+			App.showNotification("Saving in background...");
 
-        } catch (IOException | GeneralSecurityException e) {
-            logger.warn("Validation check failed");
-            logger.error("Exception during validation", e);
-            App.showNotification("Error checking data - " + e.getMessage());
-        }
-    }
-	
+			resetForm();
+			// JavaFXTools.loadScene(FxmlView.HOME);
+			App.showNotification("Drive queued! Ready for next entry.");
+			logger.info("Task queued. Form reset for next entry.");
+
+		} catch (IOException | GeneralSecurityException e) {
+			logger.warn("Validation check failed");
+			logger.error("Exception during validation", e);
+			App.showNotification("Error checking data - " + e.getMessage());
+		}
+	}
+
 //	Cancels the form
 	@FXML
 	private void cancelButtonClicked() {

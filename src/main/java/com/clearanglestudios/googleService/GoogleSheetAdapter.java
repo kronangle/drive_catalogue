@@ -174,5 +174,10 @@ public class GoogleSheetAdapter implements IDataService {
 		return GoogleTools.doesCrewNameExist(crewName);
 	}
 
+	@Override
+	public boolean isAdmin(String email) throws GeneralSecurityException, IOException {
+		return GoogleTools.isAdmin(email);
+	}
+
 	
 }

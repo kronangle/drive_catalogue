@@ -2,12 +2,16 @@ package com.clearanglestudios.drive_catalogue;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.clearanglestudios.googleService.IDataService;
+import com.clearanglestudios.objects.Drive;
 import com.clearanglestudios.objects.SheetUpdate;
 
 import javafx.collections.FXCollections;
@@ -45,9 +49,9 @@ public class DriveIngestController {
 
 //	Initialize Logger
 	private static final Logger logger = LogManager.getLogger(DriveIngestController.class);
-	
+
 //	-------------------------------------------------------------------------------------
-	
+
 //	Data Management
 	private final IDataService dataService = App.getDataService();
 
@@ -76,18 +80,19 @@ public class DriveIngestController {
 //	Runs before displaying the pane
 	@FXML
 	public void initialize() {
-//		App.hideNotification();
 		logger.info("Initialising DriveIngestController");
 //		-----------------------------------------------------
 //		Try get the drive data from the spreadsheet
-		try {
-			obserableDriveList.addAll(dataService.getFilteredDriveNames(STATUS_TO_FIND));
+		if (Settings.isShowAllReturn()) {
+			logger.info("Admin Mode: Fetching ALL drives for Return...");
+			obserableDriveList.addAll(getUnfilteredDriveList());
 			driveComboBox_DriveIngest.getItems().addAll(obserableDriveList);
-		} catch (GeneralSecurityException e) {
-			dataService.logGeneralSecurityException("Filtered Drive", e);
-		} catch (IOException e) {
-			dataService.logIOException("Filtered Drive", e);
+		} else {
+			logger.info("Standard Mode: Fetching 'Out' & 'Ingesting' drives only...");
+			obserableDriveList.addAll(getFilteredDriveList());
+			driveComboBox_DriveIngest.getItems().addAll(obserableDriveList);
 		}
+
 //		-----------------------------------------------------
 //		Try get the ingest PC names from the spreadsheet
 		try {
@@ -99,8 +104,8 @@ public class DriveIngestController {
 		}
 //		-------------------------------------------------
 //		Set current user's name on label
-		loggedInLabel_DriveIngest.setText(loggedInLabelSpacing + loggedInLabelText
-				+ dataService.getCurrentUserName() + loggedInLabelSpacing);
+		loggedInLabel_DriveIngest.setText(
+				loggedInLabelSpacing + loggedInLabelText + dataService.getCurrentUserName() + loggedInLabelSpacing);
 //		-------------------------------------------------
 //		Add a listener to filter items based on input
 		driveComboBox_DriveIngest.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
@@ -108,6 +113,37 @@ public class DriveIngestController {
 		});
 //		-------------------------------------------------
 		logger.info("COMPLETED Initialising DriveIngestController");
+	}
+
+//	Returns all the drives names as a list of strings
+	private List<String> getUnfilteredDriveList() {
+		List<Drive> allDrives = new ArrayList<Drive>();
+		List<String> driveNames = new ArrayList<String>();
+
+		try {
+			allDrives = dataService.getDriveData();
+			for (Drive d : allDrives) {
+				driveNames.add(d.getName());
+			}
+		} catch (Exception e) {
+			logger.error("Failed to load drive data", e);
+			App.showNotification("Error loading drives.");
+		}
+
+		Collections.sort(driveNames);
+
+		return driveNames;
+	}
+
+	private List<String> getFilteredDriveList() {
+		try {
+			return dataService.getFilteredDriveNames(STATUS_TO_FIND);
+		} catch (GeneralSecurityException e) {
+			dataService.logGeneralSecurityException("PC", e);
+		} catch (IOException e) {
+			dataService.logIOException("PC", e);
+		}
+		return new ArrayList<String>();
 	}
 
 //	=====================================================================================
@@ -184,7 +220,7 @@ public class DriveIngestController {
 		}
 
 		try {
-			// VERIFY DATA 
+			// VERIFY DATA
 			Map<String, Boolean> verifyResults = dataService.verifyInfo(info);
 
 			// CHECK FOR ERRORS
@@ -203,7 +239,7 @@ public class DriveIngestController {
 				return; // Do not queue invalid data.
 			}
 
-			// Create ticket and send to background thread 
+			// Create ticket and send to background thread
 			SheetUpdate queueTask = new SheetUpdate(info);
 			dataService.queueSheetUpdate(queueTask);
 
@@ -223,7 +259,7 @@ public class DriveIngestController {
 			App.showNotification("Validation Error - " + e.getMessage());
 		}
 	}
-	
+
 //	Cancels the form
 	@FXML
 	private void cancelButtonClicked() {

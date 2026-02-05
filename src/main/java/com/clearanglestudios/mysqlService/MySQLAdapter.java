@@ -63,7 +63,8 @@ public class MySQLAdapter implements IDataService {
 						rs.getString("dateOfLastLogged"), 
 						rs.getString("loggedByUser"), 
 						rs.getString("driveTag"),
-						rs.getString("casTag") 
+						rs.getString("casTag"),
+						rs.getString("due_date")
 				);
 				drives.add(drive);
 			}
@@ -267,5 +268,11 @@ public class MySQLAdapter implements IDataService {
 	@Override
 	public void logIOException(String context, IOException e) {
 		logger.error(context, e);
+	}
+
+	@Override
+	public boolean isAdmin(String email) throws GeneralSecurityException, IOException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

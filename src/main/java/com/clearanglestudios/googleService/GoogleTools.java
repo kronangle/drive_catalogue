@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.clearanglestudios.drive_catalogue.App;
-import com.clearanglestudios.drive_catalogue.LoginPageController;
+import com.clearanglestudios.drive_catalogue.Settings;
 import com.clearanglestudios.objects.Crew;
 import com.clearanglestudios.objects.Drive;
 import com.clearanglestudios.objects.SheetUpdate;
@@ -70,12 +69,14 @@ public class GoogleTools {
 	private static final String SPREADSHEET_ID = "1DrFLxok8YfehhbIxcbreBVV-kN__MIzf9BFJQEP7d_o"; // Which sheet
 //	private static final String ACTIVE_SHEET = "drive_catalogue";
 	private static final String ACTIVE_SHEET = "drive_catalogue_test";
-	private static final String DRIVE_DATA_SHEET_AND_RANGE = ACTIVE_SHEET + "!A8:K170"; // where to get drive data
+	private static final String DRIVE_DATA_SHEET_AND_RANGE = ACTIVE_SHEET + "!A8:M"; // where to get drive data
 	private static final String UPDATE_RANGE = ACTIVE_SHEET + "!A";
-	private static final String CREW_DATA_SHEET_AND_RANGE = "data_reference!A2:D70"; // where to get crew data
-	private static final String PC_DATA_SHEET_AND_RANGE = "data_reference!G2:G100"; // where to get pc data
-	private static final String IT_EMAIL_DATA_SHEET_AND_RANGE = "data_reference!J2:J100"; // where to get iT data
-	
+	private static final String CREW_DATA_SHEET_AND_RANGE = "data_reference!A2:D"; // where to get crew data
+	private static final String PC_DATA_SHEET_AND_RANGE = "data_reference!G2:G"; // where to get pc data
+	private static final String IT_EMAIL_DATA_SHEET_AND_RANGE = "data_reference!J2:J"; // where to get iT data
+	private static final int DRIVES_SHEET_TOTAL_COLUMNS = 13;
+	private static final int FIRST_DATA_ROW = 8;
+	private static final int DEFAULT_LEASE_DURATION = 7;
 
 //	Google constant values/
 	private static final String APPLICATION_NAME = "CAS Drive Catalogue";
@@ -172,41 +173,6 @@ public class GoogleTools {
 
 //	---------------------------- Credential Requester -----------------------------------
 
-	/**
-	 * Creates an authorized Credential object.
-	 *
-	 * @param HTTP_TRANSPORT The network HTTP Transport.
-	 * @return An authorized Credential object.
-	 * @throws IOException If the credentials.json file cannot be found.
-	 */
-//	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
-////	  --------------------------------------
-////		Load client secrets.
-//		InputStream in = GoogleTools.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
-//		if (in == null) {
-//			logger.error("Resource not found: " + CREDENTIALS_FILE_PATH);
-//			throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
-//		}
-//		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-////    --------------------------------------
-////		Build flow and trigger user authorization request.
-//		GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,
-//				clientSecrets, SCOPES)
-//				.setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-//				.setAccessType("offline").build();
-////    --------------------------------------
-////		Set the receiver
-////		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(0).build();
-////		logger.info("Getting free port...");
-////		int freePort = getFreePort();
-////		logger.info("Using free port: " + freePort);
-//		LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(/*freePort*/-1).build();
-//		logger.info("Created LocalServerReceiver at URI: " + receiver.getRedirectUri());
-////    --------------------------------------
-//		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-////    --------------------------------------
-//	}
-
 	private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
 //		  --------------------------------------
 //			Load client secrets.
@@ -231,15 +197,6 @@ public class GoogleTools {
 		logger.info("Created LocalServerReceiver (Auto-Port). Handing off to Authorization App.");
 		//     --------------------------------------
 		return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-	}
-
-	private static int getFreePort() {
-		try (ServerSocket socket = new ServerSocket(0)) {
-			socket.setReuseAddress(true);
-			return socket.getLocalPort();
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to find a free port", e);
-		}
 	}
 
 //	--------------------------- Spreadsheet Retriever -----------------------------------
@@ -344,46 +301,43 @@ public class GoogleTools {
 	}
 
 	/**
-     * Fetches the user's profile data (Name, Email) from Google 
-     * and stores it in memory.
-     */
-    public static void fetchUserInfo() throws IOException, GeneralSecurityException {
-        PeopleService peopleService = getPeopleService();
+	 * Fetches the user's profile data (Name, Email) from Google and stores it in
+	 * memory.
+	 */
+	public static void fetchUserInfo() throws IOException, GeneralSecurityException {
+		PeopleService peopleService = getPeopleService();
 
-        currentUser = peopleService.people().get("people/me")
-                .setPersonFields("names,emailAddresses")
-                .execute();
-                
-        logger.info("User info fetched successfully.");
-    }
+		currentUser = peopleService.people().get("people/me").setPersonFields("names,emailAddresses").execute();
 
-    /**
-     * Returns the full name of the logged-in user.
-     * Safe to call from any controller (returns "Unknown" if null).
-     */
-    public static String getCurrentUserName() {
-        if (currentUser != null && !currentUser.getNames().isEmpty()) {
-            return currentUser.getNames().get(0).getDisplayName();
-        }
-        return "Unknown User";
-    }
+		logger.info("User info fetched successfully.");
+	}
 
-    /**
-     * Returns the email of the logged-in user.
-     */
-    public static String getCurrentUserEmail() {
-        if (currentUser != null && !currentUser.getEmailAddresses().isEmpty()) {
-            return currentUser.getEmailAddresses().get(0).getValue();
-        }
-        return "unknown@email.com";
-    }
-    
-    public static void clearCurrentUser() {
+	/**
+	 * Returns the full name of the logged-in user. Safe to call from any controller
+	 * (returns "Unknown" if null).
+	 */
+	public static String getCurrentUserName() {
+		if (currentUser != null && !currentUser.getNames().isEmpty()) {
+			return currentUser.getNames().get(0).getDisplayName();
+		}
+		return "Unknown User";
+	}
+
+	/**
+	 * Returns the email of the logged-in user.
+	 */
+	public static String getCurrentUserEmail() {
+		if (currentUser != null && !currentUser.getEmailAddresses().isEmpty()) {
+			return currentUser.getEmailAddresses().get(0).getValue();
+		}
+		return "unknown@email.com";
+	}
+
+	public static void clearCurrentUser() {
 		currentUser = null;
 		logger.info("Current user cleared");
 	}
 
-	
 //	=====================================================================================
 //	
 //								DATA MANAGEMENT METHODS
@@ -396,7 +350,8 @@ public class GoogleTools {
 //			----------------------------------------------------------
 //			Get the drive data
 		logger.info("Getting Drive Data from sheet...");
-		List<List<Object>> driveData = GoogleTools.readValuesFromSheet(DRIVE_DATA_SHEET_AND_RANGE, 10);
+		List<List<Object>> driveData = GoogleTools.readValuesFromSheet(DRIVE_DATA_SHEET_AND_RANGE,
+				DRIVES_SHEET_TOTAL_COLUMNS);
 		logger.info("Got Drive Data from sheet...");
 //		----------------------------------------------------------
 //			Cycle through each row of the drive data			
@@ -404,7 +359,7 @@ public class GoogleTools {
 //				Extract the necessary data and create List of Drive objects
 			Drive drive = new Drive((String) row.get(0), (String) row.get(1), (String) row.get(2), (String) row.get(3),
 					(String) row.get(4), (String) row.get(5), (String) row.get(6), (String) row.get(7),
-					(String) row.get(8), (String) row.get(9));
+					(String) row.get(8), (String) row.get(9), (String) row.get(12));
 			drives.add(drive);
 		}
 //		----------------------------------------------------------
@@ -536,10 +491,6 @@ public class GoogleTools {
 
 		return itEmails;
 	}
-	
-
-	
-	
 
 //	Clears the local memory cache.
 	public static void clearCache() {
@@ -911,7 +862,8 @@ public class GoogleTools {
 //		----------------------------------------
 //		Get the drive data
 		logger.info("Getting Drive Data from sheet...");
-		List<List<Object>> driveData = GoogleTools.readValuesFromSheet(DRIVE_DATA_SHEET_AND_RANGE, 10);
+		List<List<Object>> driveData = GoogleTools.readValuesFromSheet(DRIVE_DATA_SHEET_AND_RANGE,
+				DRIVES_SHEET_TOTAL_COLUMNS);
 		logger.info("Got Drive data from sheet...");
 //		----------------------------------------
 //		Find the row with the matching hard drive name (column 2)
@@ -942,6 +894,19 @@ public class GoogleTools {
 		targetRow.set(5, info[2]); // Crew (column 6)
 		targetRow.set(6, today); // Date of entry (column 7)
 		targetRow.set(7, loggersName); // Name of user making changes (column 8)
+
+		String newStatus = info[1].toLowerCase();
+
+		if (newStatus.equals("out")) {
+			if (info.length > 4 && info[4] != null && !info[4].isEmpty()) {
+				targetRow.set(12, info[4]);
+			} else {
+				targetRow.set(12, getFutureDate(DEFAULT_LEASE_DURATION));
+			}
+		} else if (newStatus.equals("in")) {
+			targetRow.set(12, "");
+		}
+
 //		----------------------------------------
 //		Write the updated row back to the spreadsheet
 		commitChangesToSheet(targetRowIndex, targetRow);
@@ -950,21 +915,25 @@ public class GoogleTools {
 		clearCache();
 //		----------------------------------------
 //		Send email to involved parties
-		try {
-			sendEmail(crewToEmail, info[0], info[1], today, loggersName, info[3]);
-		} catch (MessagingException e) {
-			logger.warn("Failed to send email");
-			logger.error("MessagingException ", e);
-			App.showNotification("Failed to send email");
-		} catch (IOException e) {
-			logger.warn("Failed to send email");
-			logger.error("IOException ", e);
-			App.showNotification("Failed to send email");
-		} catch (GeneralSecurityException e) {
-			logger.warn("Failed to send email");
-			logger.error("GeneralSecurityException ", e);
-			App.showNotification("Failed to send email");
-		}
+        if (Settings.isEmailEnabled()) {
+            try {
+                sendEmail(crewToEmail, info[0], info[1], today, loggersName, info[3]);
+            } catch (MessagingException e) {
+    			logger.warn("Failed to send email");
+    			logger.error("MessagingException ", e);
+    			App.showNotification("Failed to send email");
+    		} catch (IOException e) {
+    			logger.warn("Failed to send email");
+    			logger.error("IOException ", e);
+    			App.showNotification("Failed to send email");
+    		} catch (GeneralSecurityException e) {
+    			logger.warn("Failed to send email");
+    			logger.error("GeneralSecurityException ", e);
+    			App.showNotification("Failed to send email");
+    		}
+        } else {
+            logger.info("Email notification skipped due to Admin Settings.");
+        }
 //		----------------------------------------
 		logger.info("Row updated successfully: " + targetRow);
 	}
@@ -980,10 +949,10 @@ public class GoogleTools {
 	private static void commitChangesToSheet(int targetRowIndex, List<Object> targetRow)
 			throws IOException, GeneralSecurityException {
 		System.out.println("TargetRowIndex: " + targetRowIndex);
-		System.out.println("TargetRowIndex + 8: " + (targetRowIndex + 8));
+		System.out.println("TargetRowIndex + 8: " + (targetRowIndex + FIRST_DATA_ROW));
 		System.out.println(DRIVE_DATA_SHEET_AND_RANGE);
 //		Use dynamic range to limit it to only target row
-		String updateRange = UPDATE_RANGE + (targetRowIndex + 8);
+		String updateRange = UPDATE_RANGE + (targetRowIndex + FIRST_DATA_ROW);
 
 // 		Create a ValueRange object using the new target row values
 		ValueRange body = new ValueRange().setValues(List.of(targetRow));
@@ -992,7 +961,7 @@ public class GoogleTools {
 		Sheets service = getSheetsService();
 
 // 		Commit the new values to the sheet within the specified range
-		service.spreadsheets().values().update(SPREADSHEET_ID, updateRange, body).setValueInputOption("RAW").execute();
+		service.spreadsheets().values().update(SPREADSHEET_ID, updateRange, body).setValueInputOption("USER_ENTERED").execute();
 	}
 
 	/**
@@ -1031,6 +1000,18 @@ public class GoogleTools {
 //		----------------------------------------
 	}
 
+	/**
+	 * Returns a date string (dd-MM-yyyy) for a specific number of days in the
+	 * future.
+	 * 
+	 * @param daysAdded Number of days to add to today (e.g., 7).
+	 * @return Formatted date string.
+	 */
+	public static String getFutureDate(int daysAdded) {
+		LocalDate futureDate = LocalDate.now().plusDays(daysAdded);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+		return futureDate.format(formatter);
+	}
 //	=====================================================================================
 //	
 //									ERROR METHODS
@@ -1051,5 +1032,22 @@ public class GoogleTools {
 		App.showNotification(String.format("Failed to get %s data", clue));
 	}
 
-	
+	/**
+     * Checks if the provided email matches one of the IT Admin emails in the spreadsheet.
+     */
+    public static boolean isAdmin(String email) throws GeneralSecurityException, IOException {
+        List<String> itEmails = getITEmailAddresses();
+
+        if (email == null || itEmails == null) {
+            return false;
+        }
+
+        for (String authorizedEmail : itEmails) {
+            if (authorizedEmail.equalsIgnoreCase(email)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

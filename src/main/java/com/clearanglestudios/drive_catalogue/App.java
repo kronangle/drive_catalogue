@@ -11,15 +11,12 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 
 import org.controlsfx.control.NotificationPane;
 
 import com.clearanglestudios.googleService.GoogleSheetAdapter;
-import com.clearanglestudios.googleService.GoogleTools;
 import com.clearanglestudios.googleService.IDataService;
 import com.clearanglestudios.mysqlService.MySQLAdapter;
-import com.google.api.services.people.v1.PeopleService;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,18 +49,18 @@ public class App extends Application {
 
 //	For tests
 	public static boolean isTestEnvironment = false;
-	
+
 //	Data Management
 	private static IDataService dataService;
 
 //	===================================================================
 //						START UP
 //	===================================================================
-	
+
 	static {
-//      dataService = new GoogleSheetAdapter();
-        dataService = new MySQLAdapter();
-    }
+		dataService = new GoogleSheetAdapter();
+//        dataService = new MySQLAdapter();
+	}
 
 //	Launch the app
 	public static void main(String[] args) {
@@ -71,71 +68,62 @@ public class App extends Application {
 	}
 
 //  Starting point for Application
-    @Override
-    public void start(Stage stage) throws IOException {
+	@Override
+	public void start(Stage stage) throws IOException {
 
-        if (!isTestEnvironment) {
+		if (!isTestEnvironment) {
 
-            isStartingUp = true;
-            logger.info(WINDOW_TITLE + " started");
-            App.stage = stage;
+			isStartingUp = true;
+			logger.info(WINDOW_TITLE + " started");
+			App.stage = stage;
 
-            // Default destination: Splash Page
-            FxmlView startView = FxmlView.SPLASH;
+			// Default destination: Splash Page
+			FxmlView startView = FxmlView.SPLASH;
 
-//            // Check if we can skip login
-//            // Note: This pings Google. If it takes >1s, we might add a splash screen later.
-//            if (GoogleTools.isTokenValid()) {
-//                logger.info("Valid token found. Skipping login.");
-//                startView = FxmlView.HOME;
-//            } else {
-//                logger.info("No valid token. Showing login.");
-//            }
+			// Initialize the NotificationPane with the DETERMINED FXML
+			Parent initialRoot = loadFXML(startView.getFxmlName());
 
-            // Initialize the NotificationPane with the DETERMINED FXML
-            Parent initialRoot = loadFXML(startView.getFxmlName());
-            
-            notificationPane = new NotificationPane(initialRoot);
-            notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
+			notificationPane = new NotificationPane(initialRoot);
+			notificationPane.getStyleClass().add(NotificationPane.STYLE_CLASS_DARK);
 
-            // Create the scene with the NotificationPane as the root
-            scene = new Scene(notificationPane, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_LENGTH);
-            
-            // [Standardization] Force Global CSS on startup
-            String cssPath = App.class.getResource("styles.css").toExternalForm();
-            scene.getStylesheets().add(cssPath);
-            
-            stage.setScene(scene);
-            stage.setResizable(true);
+			// Create the scene with the NotificationPane as the root
+			scene = new Scene(notificationPane, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_LENGTH);
 
-            // Set the icon and title
-            stage.getIcons().add(new Image(getClass().getResourceAsStream(PRIMARY_ICON_FOR_APP)));
-            stage.setTitle(WINDOW_TITLE);
+			// [Standardization] Force Global CSS on startup
+			String cssPath = App.class.getResource("styles.css").toExternalForm();
+			scene.getStylesheets().add(cssPath);
 
-            // Display stage and bring it to the front
-            stage.show();
-            bringStageToFront();
+			stage.setScene(scene);
+			stage.setResizable(true);
 
-            isStartingUp = false;
-        } else {
-            // Test Environment logic (Keep as is)
-            isStartingUp = true;
-            logger.info(WINDOW_TITLE + " started (Test Mode)");
-            App.stage = stage;
+			// Set the icon and title
+			stage.getIcons().add(new Image(getClass().getResourceAsStream(PRIMARY_ICON_FOR_APP)));
+			stage.setTitle(WINDOW_TITLE);
 
-            Parent initialRoot = loadFXML(FxmlView.LOGIN.getFxmlName());
-            scene = new Scene(initialRoot);
-            stage.setScene(scene);
-            stage.setResizable(false);
-            
-            stage.getIcons().add(new Image(getClass().getResourceAsStream(PRIMARY_ICON_FOR_APP)));
-            stage.setTitle(WINDOW_TITLE);
+			// Display stage and bring it to the front
+			stage.show();
+			bringStageToFront();
 
-            stage.show();
-            bringStageToFront();
-        }
-    }
-	
+			isStartingUp = false;
+		} else {
+			// Test Environment logic (Keep as is)
+			isStartingUp = true;
+			logger.info(WINDOW_TITLE + " started (Test Mode)");
+			App.stage = stage;
+
+			Parent initialRoot = loadFXML(FxmlView.LOGIN.getFxmlName());
+			scene = new Scene(initialRoot);
+			stage.setScene(scene);
+			stage.setResizable(false);
+
+			stage.getIcons().add(new Image(getClass().getResourceAsStream(PRIMARY_ICON_FOR_APP)));
+			stage.setTitle(WINDOW_TITLE);
+
+			stage.show();
+			bringStageToFront();
+		}
+	}
+
 //	Forces the window to the front of the screen
 	public static void bringStageToFront() {
 		stage.setAlwaysOnTop(true); // Temporarily make the stage always on top
@@ -185,18 +173,18 @@ public class App extends Application {
 //	Show a notification
 	public static void showNotification(String message) {
 		// Check which thread call is on
-        if (Platform.isFxApplicationThread()) {
-            if (notificationPane != null) {
-                notificationPane.setText(message);
-                notificationPane.show();
-                
-                PauseTransition delay = new PauseTransition(Duration.seconds(3));
-                delay.setOnFinished(e -> hideNotification());
-                delay.play();
-            }
-        } else {
-            Platform.runLater(() -> showNotification(message));
-        }
+		if (Platform.isFxApplicationThread()) {
+			if (notificationPane != null) {
+				notificationPane.setText(message);
+				notificationPane.show();
+
+				PauseTransition delay = new PauseTransition(Duration.seconds(3));
+				delay.setOnFinished(e -> hideNotification());
+				delay.play();
+			}
+		} else {
+			Platform.runLater(() -> showNotification(message));
+		}
 	}
 
 //	Hide the notification
@@ -222,7 +210,7 @@ public class App extends Application {
 		return notificationPane;
 	}
 
-    public static IDataService getDataService() {
-        return dataService;
-    }
+	public static IDataService getDataService() {
+		return dataService;
+	}
 }

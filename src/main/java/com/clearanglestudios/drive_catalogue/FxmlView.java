@@ -11,7 +11,8 @@ public enum FxmlView {
     LOGIN("LoginPage"), 
     KEY_ASSIGN("KeyAssign"),
 	KEY_RETURN("KeyReturn"),
-	KEY_HOME("KeyHome");
+	KEY_HOME("KeyHome"), 
+	ADMIN("AdminPanel");
 
     private final String fxmlFileName;
 

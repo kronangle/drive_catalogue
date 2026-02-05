@@ -32,6 +32,7 @@
          </graphic>
       </Button>
       <Button fx:id="keyButton_Primary" mnemonicParsing="false" onAction="#keyButtonClicked" prefWidth="63.0" styleClass="custom-button" text="KEYS" />
+      <Button fx:id="adminButton_Primary" mnemonicParsing="false" onAction="#openAdminPanel" prefWidth="63.0" styleClass="custom-button" text="ADMIN" />
    </children>
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />

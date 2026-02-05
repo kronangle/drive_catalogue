@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane fx:id="stackpaneAdminPanel" stylesheets="@styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.clearanglestudios.drive_catalogue.AdminPanelController">
+   <children>
+      <Pane fx:id="paneAdminPanel" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="264.0" prefWidth="265.0" styleClass="custom-pane" stylesheets="@styles.css">
+         <children>
+            <Group layoutX="5.0" layoutY="87.0" />
+            <ImageView fitHeight="112.0" fitWidth="200.0" layoutX="33.0" layoutY="6.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../Images/clear_angle_full_logo_grey_no_bg.png" />
+               </image>
+            </ImageView>
+            <Label fx:id="loggedInLabel_AdminPanel" focusTraversable="false" layoutX="5.0" layoutY="238.0" styleClass="custom-label" text="Logged in as:" />
+            <Button fx:id="saveButton_AdminPanel" layoutX="88.0" layoutY="205.0" mnemonicParsing="false" onAction="#saveButtonClicked" prefHeight="25.0" prefWidth="61.0" styleClass="custom-button" text="SAVE" />
+            <Button fx:id="cancelButton_AdminPanel" layoutX="169.0" layoutY="205.0" mnemonicParsing="false" onAction="#cancelButtonClicked" styleClass="custom-button" text="CANCEL" />
+            <CheckBox fx:id="allDrives_Ingest" layoutX="68.0" layoutY="87.0" mnemonicParsing="false" text="Show all drives for Ingest" textFill="WHITE" />
+            <CheckBox fx:id="allDrives_Return" layoutX="68.0" layoutY="125.0" mnemonicParsing="false" text="Show all drives for Return" textFill="WHITE" />
+            <CheckBox fx:id="emailToggle" layoutX="68.0" layoutY="163.0" mnemonicParsing="false" selected="true" text="Email notifications for updates" textFill="WHITE" />
+         </children>
+      </Pane>
+   </children>
+   <styleClass>
+      <String fx:value="custom-pane" />
+      <String fx:value="custom-stack" />
+   </styleClass>
+</StackPane>

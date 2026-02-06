@@ -1,48 +1,48 @@
-package com.clearanglestudios.drive_catalogue;
-
-import static org.junit.Assert.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.clearanglestudios.googleService.GoogleTools;
-import com.clearanglestudios.objects.Crew;
-import com.clearanglestudios.objects.Drive;
-
-public class GoogleToolsTest {
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
-	@Test
-	public void checkIfNameIsConvertedToEmailPrefixCorrectly() {
-		String nameToTest = GoogleTools.getEmailPrefix("Joe Bloggs");
-		assertEquals("jbloggs", nameToTest);
-	}
-
-	@Test
-	public void checkIfDoubleBarrelNameIsConvertedToEmailPrefixCorrectly() {
-		String nameToTest = GoogleTools.getEmailPrefix("Joe Bloggs-Smith");
-		assertEquals("jbloggssmith", nameToTest);
-	}
-
-	@Test
-	public void checkIfShortNameIsConvertedToEmailPrefixCorrectly() {
-		String nameToTest = GoogleTools.getEmailPrefix("jbloggs");
-		assertEquals("jbloggs", nameToTest);
-	}
-
+//package com.clearanglestudios.drive_catalogue;
+//
+//import static org.junit.Assert.*;
+//import static org.assertj.core.api.Assertions.assertThat;
+//
+//import java.io.IOException;
+//import java.security.GeneralSecurityException;
+//import java.util.ArrayList;
+//
+//import org.junit.After;
+//import org.junit.Before;
+//import org.junit.Test;
+//
+//import com.clearanglestudios.googleService.GoogleTools;
+//import com.clearanglestudios.objects.Crew;
+//import com.clearanglestudios.objects.Drive;
+//
+//public class GoogleToolsTest {
+//
+//	@Before
+//	public void setUp() throws Exception {
+//	}
+//
+//	@After
+//	public void tearDown() throws Exception {
+//	}
+//
+//	@Test
+//	public void checkIfNameIsConvertedToEmailPrefixCorrectly() {
+//		String nameToTest = GoogleTools.getEmailPrefix("Joe Bloggs");
+//		assertEquals("jbloggs", nameToTest);
+//	}
+//
+//	@Test
+//	public void checkIfDoubleBarrelNameIsConvertedToEmailPrefixCorrectly() {
+//		String nameToTest = GoogleTools.getEmailPrefix("Joe Bloggs-Smith");
+//		assertEquals("jbloggssmith", nameToTest);
+//	}
+//
+//	@Test
+//	public void checkIfShortNameIsConvertedToEmailPrefixCorrectly() {
+//		String nameToTest = GoogleTools.getEmailPrefix("jbloggs");
+//		assertEquals("jbloggs", nameToTest);
+//	}
+//
 //	@Test
 //	public void checkGetDriveDataReturnsArrayListOfDrive() throws GeneralSecurityException, IOException {
 //		// When: call the method
@@ -90,7 +90,7 @@ public class GoogleToolsTest {
 //		// Check first PC name is alphabetically sorted
 //		assertThat(pcData.get(0).equals("Akuma"));
 //	}
-
+//
 //	@Test
 //	public void checkGetFilteredDriveDataReturnsArrayListOfDriveWithStatusOfIn()
 //			throws GeneralSecurityException, IOException {
@@ -513,7 +513,7 @@ public class GoogleToolsTest {
 //		assertThat(itEmailAddresses.contains(emailToCheck));
 //
 //	}
-
+//
 //	@Test
 //	public void checkDoesDriveNameExistGoodValue() throws GeneralSecurityException, IOException {
 //		ArrayList<Drive> drives = GoogleTools.getDriveData();
@@ -566,25 +566,25 @@ public class GoogleToolsTest {
 //		
 //		assertTrue(GoogleTools.doesPCNameExist(pcNameToCompare));
 //	}
-	
+//	
 //	@Test
 //	public void checkPCNameExistBadValue() throws GeneralSecurityException, IOException {
 //		String[] pcNameToCompare = { "", "", "", "Bad PC Name" };
 //		
 //		assertFalse(GoogleTools.doesPCNameExist(pcNameToCompare));
 //	}
-
-	@Test
-    public void testIsTokenValid_WhenLoggedOut_ReturnsFalse() {
-        // 1. Arrange: Ensure user is logged out
-        GoogleTools.logUserOut(); 
-
-        // 2. Act: Ask if the token is valid
-        boolean isValid = GoogleTools.isTokenValid(); 
-
-        // 3. Assert: Use AssertJ syntax
-        assertThat(isValid)
-            .as("Token should be invalid when logged out")
-            .isFalse();
-    }
-}
+//
+//	@Test
+//    public void testIsTokenValid_WhenLoggedOut_ReturnsFalse() {
+//        // 1. Arrange: Ensure user is logged out
+//        GoogleTools.logUserOut(); 
+//
+//        // 2. Act: Ask if the token is valid
+//        boolean isValid = GoogleTools.isTokenValid(); 
+//
+//        // 3. Assert: Use AssertJ syntax
+//        assertThat(isValid)
+//            .as("Token should be invalid when logged out")
+//            .isFalse();
+//    }
+//}

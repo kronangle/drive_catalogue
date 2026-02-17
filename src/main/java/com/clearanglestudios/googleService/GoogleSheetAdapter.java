@@ -16,6 +16,11 @@ import com.clearanglestudios.objects.SheetUpdate;
  * and the legacy Static Utility classes (GoogleTools & KeyService).
  */
 public class GoogleSheetAdapter implements IDataService {
+	
+	@Override
+    public List<Drive> getDriveData() throws GeneralSecurityException, IOException {
+        return GoogleTools.getDriveData();
+    }
 
     public GoogleSheetAdapter() {
     }
@@ -58,10 +63,7 @@ public class GoogleSheetAdapter implements IDataService {
     //                       DRIVE MODULE
     // =================================================================
 
-    @Override
-    public List<Drive> getDriveData() throws GeneralSecurityException, IOException {
-        return GoogleTools.getDriveData();
-    }
+    
 
     @Override
     public List<String> getFilteredDriveNames(String status) throws GeneralSecurityException, IOException {

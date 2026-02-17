@@ -82,7 +82,7 @@ public class PrimaryController {
 		logger.info("COMPLETED Initialising PrimaryController");
 	}
 
-//	Disable ingest button if user is not a part of the IT department
+//	Disable ingest button and admin button if user is not a part of the IT department
 	private void checkPermsForButtons() {
 		String currentUserEmail = dataService.getCurrentUserEmail();
 
@@ -102,10 +102,12 @@ public class PrimaryController {
 			adminButton_Primary.setVisible(false);
 		} catch (IOException e) {
 			dataService.logIOException("Security Check", e);
+			ingestButton_Primary.setDisable(true);
+			adminButton_Primary.setVisible(false);
 		}
 	}
 
-	// Disable Key button if user is not in the allowed loggers list
+//	Disable Key button if user is not in the allowed loggers list
 	private void checkPermsForKeyButton() {
 		String currentUserName = dataService.getCurrentUserName();
 
@@ -132,8 +134,10 @@ public class PrimaryController {
 
 		} catch (GeneralSecurityException e) {
 			dataService.logGeneralSecurityException("Key Loggers", e);
+			keyButton_Primary.setDisable(true);
 		} catch (IOException e) {
 			dataService.logIOException("Key Loggers", e);
+			keyButton_Primary.setDisable(true);
 		}
 	}
 

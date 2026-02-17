@@ -32,6 +32,8 @@ public interface IDataService {
 //    --- Ingesting Data ---
     List<String> getPcNames() throws GeneralSecurityException, IOException;
     List<String> getITEmailAddresses() throws GeneralSecurityException, IOException;
+    
+//    --- Security Check ---
     boolean isAdmin(String email) throws GeneralSecurityException, IOException;
 
 //    --- Key Module ---

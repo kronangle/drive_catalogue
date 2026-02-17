@@ -12,12 +12,10 @@ public class SplashPageController {
 	
 
 	private static final Logger logger = LogManager.getLogger(SplashPageController.class);
-	
 	private final IDataService dataService = App.getDataService();
 
 	@FXML
 	public void initialize() {
-//		Platform.runLater(() -> {
 		CompletableFuture.runAsync(() -> {
 			try {
 				Thread.sleep(800);

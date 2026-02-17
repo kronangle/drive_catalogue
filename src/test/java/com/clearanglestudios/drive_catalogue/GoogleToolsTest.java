@@ -576,13 +576,10 @@
 //
 //	@Test
 //    public void testIsTokenValid_WhenLoggedOut_ReturnsFalse() {
-//        // 1. Arrange: Ensure user is logged out
 //        GoogleTools.logUserOut(); 
 //
-//        // 2. Act: Ask if the token is valid
 //        boolean isValid = GoogleTools.isTokenValid(); 
 //
-//        // 3. Assert: Use AssertJ syntax
 //        assertThat(isValid)
 //            .as("Token should be invalid when logged out")
 //            .isFalse();

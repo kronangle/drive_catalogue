@@ -1,7 +1,7 @@
 package com.clearanglestudios.objects;
 
 public class Drive {
-	
+
 	private String serialNumber;
 	private String casTag;
 	private String driveTag;
@@ -13,9 +13,11 @@ public class Drive {
 	private String dateOfLastLogged;
 	private String loggedByUser;
 	private String dueDate;
-	
-	public Drive(String serialNumber, String name, String size, String status, String assignment,
-			String crew, String dateOfLastLogged, String loggedByUser, String driveTag, String casTag, String dueDate) {
+
+	public Drive(String serialNumber, String name, String size, 
+			String status, String assignment, String crew,
+			String dateOfLastLogged, String loggedByUser, 
+			String driveTag, String casTag, String dueDate) {
 		this.serialNumber = serialNumber;
 		this.casTag = casTag;
 		this.driveTag = driveTag;
@@ -28,13 +30,13 @@ public class Drive {
 		this.loggedByUser = loggedByUser;
 		this.dueDate = dueDate;
 	}
-	
+
 //	============================================
 //	
 //				Getters and Setters
 //	
 //	============================================
-	
+
 	public String getDueDate() {
 		return dueDate;
 	}
@@ -46,48 +48,63 @@ public class Drive {
 	public String getSerialNumber() {
 		return serialNumber;
 	}
+
 	public void setSerialNumber(String serialNumber) {
 		this.serialNumber = serialNumber;
 	}
+
 	public String getCasTag() {
 		return casTag;
 	}
+
 	public void setCasTag(String casTag) {
 		this.casTag = casTag;
 	}
+
 	public String getName() {
 		return name;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public String getSize() {
 		return size;
 	}
+
 	public void setSize(String size) {
 		this.size = size;
 	}
+
 	public String getStatus() {
 		return status;
 	}
+
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
 	public String getAssignment() {
 		return assignment;
 	}
+
 	public void setAssignment(String assignment) {
 		this.assignment = assignment;
 	}
+
 	public String getCrew() {
 		return crew;
 	}
+
 	public void setCrew(String crew) {
 		this.crew = crew;
 	}
+
 	public String getDateOfLastLogged() {
 		return dateOfLastLogged;
 	}
+
 	public void setDateOfLastLogged(String dateOfLastLogged) {
 		this.dateOfLastLogged = dateOfLastLogged;
 	}
@@ -114,7 +131,5 @@ public class Drive {
 				+ name + ", size=" + size + ", status=" + status + ", assignment=" + assignment + ", crew=" + crew
 				+ ", dateOfLastLogged=" + dateOfLastLogged + ", loggedByUser=" + loggedByUser + "]";
 	}
-	
-	
 
 }

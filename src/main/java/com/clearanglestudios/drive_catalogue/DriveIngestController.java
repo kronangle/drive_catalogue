@@ -83,7 +83,7 @@ public class DriveIngestController {
 		logger.info("Initialising DriveIngestController");
 //		-----------------------------------------------------
 //		Try get the drive data from the spreadsheet
-		if (Settings.isShowAllReturn()) {
+		if (Settings.isShowAllIngest()) {
 			logger.info("Admin Mode: Fetching ALL drives for Return...");
 			obserableDriveList.addAll(getUnfilteredDriveList());
 			driveComboBox_DriveIngest.getItems().addAll(obserableDriveList);

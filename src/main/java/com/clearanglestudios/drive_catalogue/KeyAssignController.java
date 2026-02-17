@@ -72,7 +72,6 @@ public class KeyAssignController {
                 }
                 Collections.sort(crewNames);
 
-                // Update UI on FX Thread
                 Platform.runLater(() -> {
                     // Add to Master Lists
                     observableKeyList.addAll(allKeys);

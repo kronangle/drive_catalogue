@@ -20,6 +20,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -357,9 +358,9 @@ public class GoogleTools {
 //			Cycle through each row of the drive data			
 		for (List<Object> row : driveData) {
 //				Extract the necessary data and create List of Drive objects
-			Drive drive = new Drive((String) row.get(0), (String) row.get(1), (String) row.get(2), (String) row.get(3),
-					(String) row.get(4), (String) row.get(5), (String) row.get(6), (String) row.get(7),
-					(String) row.get(8), (String) row.get(9), (String) row.get(12));
+			Drive drive = new Drive((String) row.get(0), (String) row.get(1), (String) row.get(2), 
+					(String) row.get(3),(String) row.get(4), (String) row.get(5), (String) row.get(6), 
+					(String) row.get(7),(String) row.get(8), (String) row.get(9), (String) row.get(12));
 			drives.add(drive);
 		}
 //		----------------------------------------------------------
@@ -510,18 +511,41 @@ public class GoogleTools {
 	 * Adds an update task to the background queue. This returns IMMEDIATELY,
 	 * allowing the UI to stay responsive.
 	 */
+//	public static void queueSheetUpdate(SheetUpdate action) {
+//		logger.info("Queuing update task...");
+//
+//		// Submit the task to the background thread
+//		updateQueue.submit(() -> {
+//			try {
+//				logger.info("Processing queue item...");
+//				pushChangesToSheet(action.getInfo());
+//			} catch (Exception e) {
+//				logger.error("Background Queue Failed", e);
+//			}
+//		});
+//	}
+	
+	
+	private static Consumer<String[]> queueProcessor = (info) -> {
+	    try {
+	        pushChangesToSheet(info);
+	    } catch (Exception e) {
+	        logger.error("Push Failed", e);
+	    }
+	};
+	
+	// This allows my test to swap out the logic
+	public static void setQueueProcessor(Consumer<String[]> newProcessor) {
+	    queueProcessor = newProcessor;
+	}
+	
 	public static void queueSheetUpdate(SheetUpdate action) {
-		logger.info("Queuing update task...");
+	    logger.info("Queuing update task...");
 
-		// Submit the task to the background thread
-		updateQueue.submit(() -> {
-			try {
-				logger.info("Processing queue item...");
-				pushChangesToSheet(action.getInfo());
-			} catch (Exception e) {
-				logger.error("Background Queue Failed", e);
-			}
-		});
+	    updateQueue.submit(() -> {
+	        logger.info("Processing queue item...");
+	        queueProcessor.accept(action.getInfo()); 
+	    });
 	}
 
 //	=====================================================================================
